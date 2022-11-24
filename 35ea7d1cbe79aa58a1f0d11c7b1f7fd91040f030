@@ -1,1 +1,1 @@
-v1 -> v2: no change
+v1 -> v2: renamed show lcores -> dump_lcores
