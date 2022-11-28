@@ -1,0 +1,5 @@
+v1 -> v2:
+- changed the approach based on Morten's review: the callback is now expected to
+  report the total number of cycles since application start and the amount of these
+  cycles that were spent doing busy work. This will give more flexibility in external
+  monitoring tools to decide the sample period to compute busyness ratio.
