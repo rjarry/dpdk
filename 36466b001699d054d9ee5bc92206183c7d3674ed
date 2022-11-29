@@ -5,7 +5,3 @@ Added #ifndef WINDOWS guards. Telemetry is not available.
 v1 -> v2:
 
 Changed "cpuset" to an array of CPU ids instead of a string.
-
-v1 -> v2:
-
-Changed "cpuset" to an array of CPU ids instead of a string.
