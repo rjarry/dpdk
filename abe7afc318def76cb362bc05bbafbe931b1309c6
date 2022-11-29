@@ -2,6 +2,7 @@ v2 -> v3:
 
 - Copied callback to local variable to guard against (unlikely) races.
 - Used != NULL convention to test if callback is defined.
+- Fixed typo in doc string.
 
 v1 -> v2:
 
