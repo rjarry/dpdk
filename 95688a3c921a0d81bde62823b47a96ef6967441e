@@ -3,6 +3,8 @@ v2 -> v3:
 - Copied callback to local variable to guard against (unlikely) races.
 - Used != NULL convention to test if callback is defined.
 - Fixed typo in doc string.
+- Did not add a % value in rte_lcore_dump() as its use would be very
+  limited.
 
 v1 -> v2:
 
