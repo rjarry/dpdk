@@ -1,1 +1,1 @@
-v4 -> v5: The callback now takes a pointer to a rte_lcore_usage structure.
+v5 -> v6: Added/rephrased some inline comments.
