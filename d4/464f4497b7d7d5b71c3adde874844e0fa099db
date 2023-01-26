@@ -1,1 +1,4 @@
-v5 -> v6: No change
+v6 -> v7:
+
+* Moved lcore role enum to name conversion in a function for reuse
+* Style fixes
