@@ -1,1 +1,5 @@
-v5 -> v6: Added/rephrased some inline comments.
+v6 -> v7:
+
+* use asprintf to format busy/total cycles in lcore_dump_cb
+* style fixes
+* moved rte_lcore_register_usage_cb in a 23.03 block of eal/version.map
