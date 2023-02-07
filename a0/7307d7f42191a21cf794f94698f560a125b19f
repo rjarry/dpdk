@@ -1,1 +1,5 @@
-v7 -> v8: no change
+v8 -> v9:
+
+- Fixed changelog & version.map order.
+- Updated with 64-bit integer telemetry functions.
+- Refined docstrings (added notice about resetting the callback).
