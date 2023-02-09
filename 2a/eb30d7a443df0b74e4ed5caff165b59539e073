@@ -1,1 +1,1 @@
-v8 -> v9: Fixed accounting of total cycles
+v9 -> v10: Fixed reset of total_cycles without stopping
