@@ -1,0 +1,6 @@
+v2:
+
+* fixed author
+* added i40e default key
+* allow 52 bytes keys (for i40e, iavf and ice drivers)
+* added -a/--all-flows option
