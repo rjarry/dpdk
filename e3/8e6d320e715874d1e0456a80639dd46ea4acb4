@@ -1,7 +1,9 @@
 v2:
 
-* Fixed typo in commit log: 's/agree gators/aggregators/' (thanks vim z= auto
-  suggestions).
+* Fixed typo in docstring: 's/uppon/upon/'
+
+* Fixed typo in commit log: 's/agree gators/aggregators/' (nice vim z= auto
+  suggestion).
 
 v1:
 
