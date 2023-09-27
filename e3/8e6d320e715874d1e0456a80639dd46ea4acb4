@@ -1,3 +1,8 @@
+v2:
+
+* Fixed typo in commit log: 's/agree gators/aggregators/' (thanks vim z= auto
+  suggestions).
+
 v1:
 
 * Ideally, this script should be tested in CI to avoid breakage when the
