@@ -1,0 +1,20 @@
+v2:
+
+* Fixed typo in docstring: 's/uppon/upon/'
+
+* Fixed typo in commit log: 's/agree gators/aggregators/' (nice vim z= auto
+  suggestion).
+
+v1:
+
+* Ideally, this script should be tested in CI to avoid breakage when the
+  telemetry data structures change. I don't know where such a test could
+  be done.
+
+* There was work done 3/4 years ago in collectd to add DPDK telemetry
+  support but I think this has now been abandoned.
+
+  https://github.com/collectd/collectd/blob/main/src/dpdk_telemetry.c
+
+  I think that keeping the exporters in the DPDK repository makes more
+  sense from a maintainability perspective.
