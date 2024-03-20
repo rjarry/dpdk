@@ -1,0 +1,13 @@
+v5:
+
+* aligned union tentative again
+
+v4:
+
+* Replaced the unnamed union with helper inline functions.
+
+v3:
+
+* Added __extension__ to the unnamed struct inside the union.
+* Fixed C++ header checks.
+* Replaced alignas() with an explicit static_assert.
