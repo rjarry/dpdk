@@ -1,0 +1,12 @@
+v3:
+
+* Added __extension__ to the unnamed struct inside the union.
+* Fixed C++ header checks.
+* Replaced alignas() with an explicit static_assert.
+
+v2:
+
+* Added __extension__ (not sure where it is needed, I don't have access to windows).
+* It still fails the header check for C++. It seems not possible to align an unnamed union...
+  Tyler, do you have an idea about how to fix that?
+* Added static_assert to ensure the anonymous union is not larger than RTE_NODE_CTX_SZ.
