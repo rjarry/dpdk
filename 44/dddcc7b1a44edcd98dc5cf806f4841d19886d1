@@ -1,0 +1,25 @@
+v7:
+
+* rebased on bf0ff8df59c7 ("maintainers: fix prog guide paths")
+* no change, only to re-trigger ci
+
+v6:
+
+* Fix ABI breakage on arm64 (and all platforms that have RTE_CACHE_LINE_SIZE=128).
+* This patch will cause CI failures without libabigail 2.5. See this commit
+  https://sourceware.org/git/?p=libabigail.git;a=commitdiff;h=f821c2be3fff2047ef8fc436f6f02301812d166f
+  for more details.
+
+v5:
+
+* Helper functions to hide casting proved to be harder than expected.
+  Naive casting may even be impossible without breaking strict aliasing
+  rules. The only other option would be to use explicit memcpy calls.
+* Unnamed union tentative again. As suggested by Tyler (thank you!),
+  using an intermediate unnamed struct to carry the alignment produces
+  consistent ABI in C and C++.
+* Also, Tyler (thank you!) suggested that the fast path area alignment
+  size may be incorrect for architectures where the cache line is not 64
+  bytes. There will be a 64 bytes hole in the structure at the end of
+  the unnamed struct before the zero length next nodes array. Use
+  __rte_cache_min_aligned to preserve existing alignment.
