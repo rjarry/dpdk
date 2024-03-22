@@ -1,0 +1,4 @@
+v2:
+
+* Added __extension__ (not sure where it is needed, I don't have access to windows).
+* Added static_assert to ensure the anonymous union is not larger than RTE_NODE_CTX_SZ.
