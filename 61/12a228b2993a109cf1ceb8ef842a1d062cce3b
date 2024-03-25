@@ -1,3 +1,9 @@
+v3:
+
+* Added __extension__ to the unnamed struct inside the union.
+* Fixed C++ header checks.
+* Replaced alignas() with an explicit static_assert.
+
 v2:
 
 * Added __extension__ (not sure where it is needed, I don't have access to windows).
