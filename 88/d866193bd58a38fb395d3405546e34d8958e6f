@@ -1,6 +1,6 @@
 v5:
 
-* Fixed -Wstrict-aliasing errors with gcc 4.8.
+* aligned union tentative again
 
 v4:
 
