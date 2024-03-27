@@ -6,6 +6,11 @@ v5:
 * Unnamed union tentative again. As suggested by Tyler (thank you!),
   using an intermediate unnamed struct to carry the alignment produces
   consistent ABI in C and C++.
+* Also, Tyler (thank you!) suggested that the fast path area alignment
+  size may be incorrect for architectures where the cache line is not 64
+  bytes. There will be a 64 bytes hole in the structure at the end of
+  the unnamed struct. Use __rte_cache_min_aligned to preserve existing
+  alignment.
 
 v4:
 
