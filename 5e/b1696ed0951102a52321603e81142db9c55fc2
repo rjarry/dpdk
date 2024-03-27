@@ -1,6 +1,11 @@
 v5:
 
-* aligned union tentative again
+* Helper functions to hide casting proved to be harder than expected.
+  Naive casting may even be impossible without breaking strict aliasing
+  rules. The only other option would be to use explicit memcpy calls.
+* Unnamed union tentative again. As suggested by Tyler (thank you!),
+  using an intermediate unnamed struct to carry the alignment produces
+  consistent ABI in C and C++.
 
 v4:
 
