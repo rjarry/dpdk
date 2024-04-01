@@ -1,0 +1,3 @@
+v2:
+
+* (kiran) removed unnecessary loop in stats_mem_init.
