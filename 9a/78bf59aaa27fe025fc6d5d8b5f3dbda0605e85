@@ -1,0 +1,4 @@
+v2:
+
+* Refuse to run if no endpoints are enabled.
+* Handle endpoint errors gracefully without failing the whole query.
