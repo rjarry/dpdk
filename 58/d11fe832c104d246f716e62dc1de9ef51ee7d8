@@ -1,0 +1,5 @@
+v3:
+
+* Fixed invalid logic in graph_insert_ordered.
+* Updated unit test to ensure head/tail/middle insertion work (the test
+  fails before fixing graph_insert_ordered).
