@@ -1,3 +1,10 @@
+v6:
+
+* Fix ABI breakage on arm64 (and all platforms that have RTE_CACHE_LINE_SIZE=128).
+* This patch will cause CI failures without libabigail 2.5. See this commit
+  https://sourceware.org/git/?p=libabigail.git;a=commitdiff;h=f821c2be3fff2047ef8fc436f6f02301812d166f
+  for more details.
+
 v5:
 
 * Helper functions to hide casting proved to be harder than expected.
