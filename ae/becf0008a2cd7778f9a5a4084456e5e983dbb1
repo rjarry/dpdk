@@ -1,0 +1,4 @@
+v2:
+
+* rebased on HEAD
+* removed check-git-log.sh from checks to avoid too many false positives
