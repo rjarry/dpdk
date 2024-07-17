@@ -1006,12 +1006,14 @@ struct rte_flow_item_ipv6 {
 #ifndef __cplusplus
 static const struct rte_flow_item_ipv6 rte_flow_item_ipv6_mask = {
 	.hdr = {
-		.src_addr =
+		.src_addr = { .a =
 			"\xff\xff\xff\xff\xff\xff\xff\xff"
 			"\xff\xff\xff\xff\xff\xff\xff\xff",
-		.dst_addr =
+		},
+		.dst_addr = { .a =
 			"\xff\xff\xff\xff\xff\xff\xff\xff"
 			"\xff\xff\xff\xff\xff\xff\xff\xff",
+		},
 	},
 };
 #endif
