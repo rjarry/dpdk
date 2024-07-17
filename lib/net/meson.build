@@ -3,6 +3,7 @@
 
 headers = files(
         'rte_ip.h',
+        'rte_ip6.h',
         'rte_cksum.h',
         'rte_tcp.h',
         'rte_udp.h',

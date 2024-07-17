@@ -6,6 +6,7 @@
 #define _IPH_H_
 
 #include <rte_ip.h>
+#include <rte_ip6.h>
 
 /**
  * @file iph.h

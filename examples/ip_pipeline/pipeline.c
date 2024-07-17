@@ -7,6 +7,7 @@
 
 #include <rte_common.h>
 #include <rte_ip.h>
+#include <rte_ip6.h>
 #include <rte_tcp.h>
 
 #include <rte_string_fns.h>
