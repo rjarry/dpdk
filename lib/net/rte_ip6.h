@@ -35,6 +35,16 @@
 extern "C" {
 #endif
 
+#define RTE_IPV6_ADDR_SIZE 16
+#define RTE_IPV6_MAX_DEPTH 128
+
+/**
+ * IPv6 Address
+ */
+struct rte_ipv6_addr {
+	unsigned char a[RTE_IPV6_ADDR_SIZE];
+};
+
 /**
  * IPv6 Header
  */
