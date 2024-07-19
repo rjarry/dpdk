@@ -46,6 +46,51 @@ struct rte_ipv6_addr {
 };
 
 /**
+ * Copy an IPv6 address into another one.
+ *
+ * @param dst
+ *   The address into which to copy data.
+ * @param src
+ *   The address from which to copy.
+ */
+static inline void *
+rte_ipv6_addr_cpy(struct rte_ipv6_addr *dst, const struct rte_ipv6_addr *src)
+{
+	return rte_memcpy(dst, src, sizeof(*dst));
+}
+
+/**
+ * Check if two IPv6 Addresses are equal.
+ */
+static inline bool
+rte_ipv6_addr_eq(const struct rte_ipv6_addr *a, const struct rte_ipv6_addr *b)
+{
+	return memcmp(a, b, sizeof(*a)) == 0;
+}
+
+/**
+ * Takes an IPv6 address and masks it using the depth.
+ *
+ * It leaves untouched one bit per unit in the depth variable and set the rest to 0.
+ *
+ * @param ip
+ *   The address to mask.
+ * @param depth
+ *   All bits starting from this bit number will be set to zero.
+ */
+static inline void
+rte_ipv6_addr_mask(struct rte_ipv6_addr *ip, uint8_t depth)
+{
+	if (depth < RTE_IPV6_MAX_DEPTH) {
+		uint8_t d = depth / 8;
+		uint8_t mask = ~(UINT8_MAX >> (depth % 8));
+		ip->a[d] &= mask;
+		d++;
+		memset(&ip->a[d], 0, sizeof(*ip) - d);
+	}
+}
+
+/**
  * IPv6 Header
  */
 struct rte_ipv6_hdr {
