@@ -20,7 +20,6 @@
 #include "rib_log.h"
 
 #define RTE_RIB_VALID_NODE	1
-#define RIB6_MAXDEPTH		128
 /* Maximum length of a RIB6 name. */
 #define RTE_RIB6_NAMESIZE	64
 
@@ -71,7 +70,7 @@ is_covered(const struct rte_ipv6_addr *ip1,
 {
 	int i;
 
-	for (i = 0; i < RTE_RIB6_IPV6_ADDR_SIZE; i++)
+	for (i = 0; i < RTE_IPV6_ADDR_SIZE; i++)
 		if ((ip1->a[i] ^ ip2->a[i]) & get_msk_part(depth, i))
 			return false;
 
@@ -105,7 +104,7 @@ static inline struct rte_rib6_node *
 get_nxt_node(struct rte_rib6_node *node,
 	const struct rte_ipv6_addr *ip)
 {
-	if (node->depth == RIB6_MAXDEPTH)
+	if (node->depth == RTE_IPV6_MAX_DEPTH)
 		return NULL;
 
 	return (get_dir(ip, node->depth)) ? node->right : node->left;
@@ -174,7 +173,7 @@ rte_rib6_lookup_exact(struct rte_rib6 *rib,
 	struct rte_rib6_node *cur;
 	struct rte_ipv6_addr tmp_ip;
 
-	if (unlikely(rib == NULL || ip == NULL || depth > RIB6_MAXDEPTH)) {
+	if (unlikely(rib == NULL || ip == NULL || depth > RTE_IPV6_MAX_DEPTH)) {
 		rte_errno = EINVAL;
 		return NULL;
 	}
@@ -212,7 +211,7 @@ rte_rib6_get_nxt(struct rte_rib6 *rib,
 	struct rte_rib6_node *tmp, *prev = NULL;
 	struct rte_ipv6_addr tmp_ip;
 
-	if (unlikely(rib == NULL || ip == NULL || depth > RIB6_MAXDEPTH)) {
+	if (unlikely(rib == NULL || ip == NULL || depth > RTE_IPV6_MAX_DEPTH)) {
 		rte_errno = EINVAL;
 		return NULL;
 	}
@@ -295,7 +294,7 @@ rte_rib6_insert(struct rte_rib6 *rib,
 	int i, d;
 	uint8_t common_depth, ip_xor;
 
-	if (unlikely((rib == NULL || ip == NULL || depth > RIB6_MAXDEPTH))) {
+	if (unlikely((rib == NULL || ip == NULL || depth > RTE_IPV6_MAX_DEPTH))) {
 		rte_errno = EINVAL;
 		return NULL;
 	}
@@ -357,7 +356,7 @@ rte_rib6_insert(struct rte_rib6 *rib,
 
 	/* closest node found, new_node should be inserted in the middle */
 	common_depth = RTE_MIN(depth, (*tmp)->depth);
-	for (i = 0, d = 0; i < RTE_RIB6_IPV6_ADDR_SIZE; i++) {
+	for (i = 0, d = 0; i < RTE_IPV6_ADDR_SIZE; i++) {
 		ip_xor = tmp_ip.a[i] ^ (*tmp)->ip.a[i];
 		if (ip_xor == 0)
 			d += 8;

@@ -17,8 +17,6 @@
 
 /* @internal Total number of tbl24 entries. */
 #define TRIE_TBL24_NUM_ENT	(1 << 24)
-/* Maximum depth value possible for IPv6 LPM. */
-#define TRIE_MAX_DEPTH		128
 /* @internal Number of entries in a tbl8 group. */
 #define TRIE_TBL8_GRP_NUM_ENT	256ULL
 /* @internal Total number of tbl8 groups in the tbl8. */
