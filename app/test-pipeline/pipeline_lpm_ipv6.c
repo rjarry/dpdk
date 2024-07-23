@@ -127,16 +127,16 @@ app_main_loop_worker_pipeline_lpm_ipv6(void) {
 
 		ip = rte_bswap32(i << (24 -
 			rte_popcount32(app.n_ports - 1)));
-		memcpy(key.ip, &ip, sizeof(uint32_t));
+		memcpy(&key.ip, &ip, sizeof(uint32_t));
 
 		printf("Adding rule to IPv6 LPM table (IPv6 destination = "
 			"%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:"
 			"%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x/%u => "
 			"port out = %u)\n",
-			key.ip[0], key.ip[1], key.ip[2], key.ip[3],
-			key.ip[4], key.ip[5], key.ip[6], key.ip[7],
-			key.ip[8], key.ip[9], key.ip[10], key.ip[11],
-			key.ip[12], key.ip[13], key.ip[14], key.ip[15],
+			key.ip.a[0], key.ip.a[1], key.ip.a[2], key.ip.a[3],
+			key.ip.a[4], key.ip.a[5], key.ip.a[6], key.ip.a[7],
+			key.ip.a[8], key.ip.a[9], key.ip.a[10], key.ip.a[11],
+			key.ip.a[12], key.ip.a[13], key.ip.a[14], key.ip.a[15],
 			key.depth, i);
 
 		status = rte_pipeline_table_entry_add(p, table_id, &key, &entry,
