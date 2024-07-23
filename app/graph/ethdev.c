@@ -124,26 +124,26 @@ ethdev_portid_by_ip4(uint32_t ip, uint32_t mask)
 }
 
 int16_t
-ethdev_portid_by_ip6(uint8_t *ip, uint8_t *mask)
+ethdev_portid_by_ip6(struct rte_ipv6_addr *ip, struct rte_ipv6_addr *mask)
 {
 	int portid = -EINVAL;
 	struct ethdev *port;
 	int j;
 
 	TAILQ_FOREACH(port, &eth_node, next) {
-		for (j = 0; j < ETHDEV_IPV6_ADDR_LEN; j++) {
+		for (j = 0; j < RTE_IPV6_ADDR_SIZE; j++) {
 			if (mask == NULL) {
-				if ((port->ip6_addr.ip[j] & port->ip6_addr.mask[j]) !=
-				    (ip[j] & port->ip6_addr.mask[j]))
+				if ((port->ip6_addr.ip.a[j] & port->ip6_addr.mask.a[j]) !=
+				    (ip->a[j] & port->ip6_addr.mask.a[j]))
 					break;
 
 			} else {
-				if ((port->ip6_addr.ip[j] & port->ip6_addr.mask[j]) !=
-				    (ip[j] & mask[j]))
+				if ((port->ip6_addr.ip.a[j] & port->ip6_addr.mask.a[j]) !=
+				    (ip->a[j] & mask->a[j]))
 					break;
 			}
 		}
-		if (j == ETHDEV_IPV6_ADDR_LEN)
+		if (j == RTE_IPV6_ADDR_SIZE)
 			return port->config.port_id;
 	}
 
@@ -294,9 +294,9 @@ ethdev_ip6_addr_add(const char *name, struct ipv6_addr_config *config)
 	eth_hdl = ethdev_port_by_id(portid);
 
 	if (eth_hdl) {
-		for (i = 0; i < ETHDEV_IPV6_ADDR_LEN; i++) {
-			eth_hdl->ip6_addr.ip[i] = config->ip[i];
-			eth_hdl->ip6_addr.mask[i] = config->mask[i];
+		for (i = 0; i < RTE_IPV6_ADDR_SIZE; i++) {
+			eth_hdl->ip6_addr.ip.a[i] = config->ip.a[i];
+			eth_hdl->ip6_addr.mask.a[i] = config->mask.a[i];
 		}
 		return 0;
 	}
@@ -626,11 +626,11 @@ cmd_ethdev_dev_ip6_addr_add_parsed(void *parsed_result, __rte_unused struct cmdl
 	struct ipv6_addr_config config;
 	int rc = -EINVAL, i;
 
-	for (i = 0; i < ETHDEV_IPV6_ADDR_LEN; i++)
-		config.ip[i] = res->ip.addr.ipv6.s6_addr[i];
+	for (i = 0; i < RTE_IPV6_ADDR_SIZE; i++)
+		config.ip.a[i] = res->ip.addr.ipv6.s6_addr[i];
 
-	for (i = 0; i < ETHDEV_IPV6_ADDR_LEN; i++)
-		config.mask[i] = res->mask.addr.ipv6.s6_addr[i];
+	for (i = 0; i < RTE_IPV6_ADDR_SIZE; i++)
+		config.mask.a[i] = res->mask.addr.ipv6.s6_addr[i];
 
 	rc = ethdev_ip6_addr_add(res->dev, &config);
 	if (rc < 0)

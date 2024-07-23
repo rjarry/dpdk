@@ -11,6 +11,7 @@
 #include <cmdline_socket.h>
 
 #include <rte_node_ip6_api.h>
+#include <rte_ip6.h>
 
 #include "module_api.h"
 #include "route_priv.h"
@@ -44,14 +45,14 @@ find_route6_entry(struct route_ipv6_config *route)
 }
 
 static uint8_t
-convert_ip6_netmask_to_depth(uint8_t *netmask)
+convert_ip6_netmask_to_depth(const struct rte_ipv6_addr *netmask)
 {
 	uint8_t setbits = 0;
 	uint8_t mask;
 	int i;
 
-	for (i = 0; i < ETHDEV_IPV6_ADDR_LEN; i++) {
-		mask = netmask[i];
+	for (i = 0; i < RTE_IPV6_ADDR_SIZE; i++) {
+		mask = netmask->a[i];
 		while (mask & 0x80) {
 			mask = mask << 1;
 			setbits++;
@@ -67,14 +68,14 @@ route6_rewirte_table_update(struct route_ipv6_config *ipv6route)
 	uint8_t depth;
 	int portid;
 
-	portid = ethdev_portid_by_ip6(ipv6route->gateway, ipv6route->mask);
+	portid = ethdev_portid_by_ip6(&ipv6route->gateway, &ipv6route->mask);
 	if (portid < 0) {
 		printf("Invalid portid found to install the route\n");
 		return portid;
 	}
-	depth = convert_ip6_netmask_to_depth(ipv6route->mask);
+	depth = convert_ip6_netmask_to_depth(&ipv6route->mask);
 
-	return rte_node_ip6_route_add(ipv6route->ip, depth, portid,
+	return rte_node_ip6_route_add(&ipv6route->ip, depth, portid,
 			RTE_NODE_IP6_LOOKUP_NEXT_REWRITE);
 
 }
@@ -95,10 +96,10 @@ route_ip6_add(struct route_ipv6_config *route)
 		return 0;
 	}
 
-	for (j = 0; j < ETHDEV_IPV6_ADDR_LEN; j++) {
-		ipv6route->ip[j] = route->ip[j];
-		ipv6route->mask[j] = route->mask[j];
-		ipv6route->gateway[j] = route->gateway[j];
+	for (j = 0; j < RTE_IPV6_ADDR_SIZE; j++) {
+		ipv6route->ip.a[j] = route->ip.a[j];
+		ipv6route->mask.a[j] = route->mask.a[j];
+		ipv6route->gateway.a[j] = route->gateway.a[j];
 	}
 	ipv6route->is_used = true;
 
@@ -156,14 +157,14 @@ cmd_ipv6_lookup_route_add_ipv6_parsed(void *parsed_result, __rte_unused struct c
 	struct route_ipv6_config config;
 	int rc = -EINVAL, i;
 
-	for (i = 0; i < ETHDEV_IPV6_ADDR_LEN; i++)
-		config.ip[i] = res->ip.addr.ipv6.s6_addr[i];
+	for (i = 0; i < RTE_IPV6_ADDR_SIZE; i++)
+		config.ip.a[i] = res->ip.addr.ipv6.s6_addr[i];
 
-	for (i = 0; i < ETHDEV_IPV6_ADDR_LEN; i++)
-		config.mask[i] = res->mask.addr.ipv6.s6_addr[i];
+	for (i = 0; i < RTE_IPV6_ADDR_SIZE; i++)
+		config.mask.a[i] = res->mask.addr.ipv6.s6_addr[i];
 
-	for (i = 0; i < ETHDEV_IPV6_ADDR_LEN; i++)
-		config.gateway[i] = res->via_ip.addr.ipv6.s6_addr[i];
+	for (i = 0; i < RTE_IPV6_ADDR_SIZE; i++)
+		config.gateway.a[i] = res->via_ip.addr.ipv6.s6_addr[i];
 
 	rc = route_ip6_add(&config);
 	if (rc)
