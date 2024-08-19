@@ -99,6 +99,7 @@ API Changes
 * net: IPv6 related symbols were moved from ``<rte_ip.h>`` to the new ``<rte_ip6.h>`` header.
 * net: The ``rte_ipv6_hdr`` structure was modified to use standard ``struct in6_addr`` instead of ``uint8_t[16]`` fields.
 * rib6,fib6,lpm6: All public API functions were modified to use ``struct in6_addr`` instead of ``uint8_t[16]`` parameters.
+* node: ``rte_node_ip6_route_add()`` was modified to use a ``struct in6_addr`` instead of ``uint8_t[16]`` parameter.
 
 ABI Changes
 -----------
