@@ -6,6 +6,7 @@
 #define _RTE_NET_PTYPE_H_
 
 #include <rte_ip.h>
+#include <rte_ip6.h>
 #include <rte_udp.h>
 #include <rte_tcp.h>
 

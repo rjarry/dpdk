@@ -23,6 +23,7 @@
 #include <rte_arp.h>
 #include <rte_icmp.h>
 #include <rte_ip.h>
+#include <rte_ip6.h>
 #include <rte_sctp.h>
 #include <rte_tcp.h>
 #include <rte_udp.h>

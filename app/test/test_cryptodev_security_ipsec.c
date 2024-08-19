@@ -6,6 +6,7 @@
 #include <rte_cryptodev.h>
 #include <rte_esp.h>
 #include <rte_ip.h>
+#include <rte_ip6.h>
 #include <rte_security.h>
 #include <rte_tcp.h>
 #include <rte_udp.h>

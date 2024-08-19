@@ -11,6 +11,7 @@
 #include <rte_net.h>
 #include <rte_ether.h>
 #include <rte_ip.h>
+#include <rte_ip6.h>
 #include <rte_dmadev.h>
 #include <rte_vhost.h>
 #include <rte_tcp.h>

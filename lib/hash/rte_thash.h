@@ -19,6 +19,7 @@
 
 #include <rte_byteorder.h>
 #include <rte_ip.h>
+#include <rte_ip6.h>
 #include <rte_common.h>
 #include <rte_thash_gfni.h>
 

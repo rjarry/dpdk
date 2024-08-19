@@ -2,6 +2,7 @@
  * Copyright(C) 2021 Marvell.
  */
 
+#include <rte_ip6.h>
 #include <rte_udp.h>
 
 #include "cnxk_security.h"

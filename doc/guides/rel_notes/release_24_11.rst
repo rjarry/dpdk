@@ -179,6 +179,7 @@ API Changes
    Also, make sure to start the actual text at the margin.
    =======================================================
 
+* net: IPv6 related symbols were moved from ``<rte_ip.h>`` to the new ``<rte_ip6.h>`` header.
 
 ABI Changes
 -----------
