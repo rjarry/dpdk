@@ -112,30 +112,6 @@ struct rte_lpm6 {
 };
 
 /*
- * Takes an array of uint8_t (IPv6 address) and masks it using the depth.
- * It leaves untouched one bit per unit in the depth variable
- * and set the rest to 0.
- */
-static inline void
-ip6_mask_addr(uint8_t *ip, uint8_t depth)
-{
-	int16_t part_depth, mask;
-	int i;
-
-	part_depth = depth;
-
-	for (i = 0; i < RTE_LPM6_IPV6_ADDR_SIZE; i++) {
-		if (part_depth < BYTE_SIZE && part_depth >= 0) {
-			mask = (uint16_t)(~(UINT8_MAX >> part_depth));
-			ip[i] = (uint8_t)(ip[i] & mask);
-		} else if (part_depth < 0)
-			ip[i] = 0;
-
-		part_depth -= BYTE_SIZE;
-	}
-}
-
-/*
  * LPM6 rule hash function
  *
  * It's used as a hash function for the rte_hash
@@ -861,7 +837,7 @@ rte_lpm6_add(struct rte_lpm6 *lpm, const struct rte_ipv6_addr *ip, uint8_t depth
 
 	/* Copy the IP and mask it to avoid modifying user's input data. */
 	masked_ip = *ip;
-	ip6_mask_addr(masked_ip.a, depth);
+	rte_ipv6_addr_mask(&masked_ip, depth);
 
 	/* Simulate adding a new route */
 	int ret = simulate_add(lpm, &masked_ip, depth);
@@ -1022,7 +998,7 @@ rte_lpm6_is_rule_present(struct rte_lpm6 *lpm, const struct rte_ipv6_addr *ip, u
 
 	/* Copy the IP and mask it to avoid modifying user's input data. */
 	masked_ip = *ip;
-	ip6_mask_addr(masked_ip.a, depth);
+	rte_ipv6_addr_mask(&masked_ip, depth);
 
 	return rule_find(lpm, &masked_ip, depth, next_hop);
 }
@@ -1072,7 +1048,7 @@ rte_lpm6_delete_bulk_func(struct rte_lpm6 *lpm,
 
 	for (i = 0; i < n; i++) {
 		masked_ip = ips[i];
-		ip6_mask_addr(masked_ip.a, depths[i]);
+		rte_ipv6_addr_mask(&masked_ip, depths[i]);
 		rule_delete(lpm, &masked_ip, depths[i]);
 	}
 
@@ -1297,7 +1273,7 @@ rte_lpm6_delete(struct rte_lpm6 *lpm, const struct rte_ipv6_addr *ip, uint8_t de
 
 	/* Copy the IP and mask it to avoid modifying user's input data. */
 	masked_ip = *ip;
-	ip6_mask_addr(masked_ip.a, depth);
+	rte_ipv6_addr_mask(&masked_ip, depth);
 
 	/* Delete the rule from the rule table. */
 	ret = rule_delete(lpm, &masked_ip, depth);

@@ -278,9 +278,12 @@ check_fib(struct rte_fib6 *fib)
 	int ret;
 
 	for (i = 0; i < RTE_FIB6_MAXDEPTH; i++) {
-		for (j = 0; j < RTE_FIB6_IPV6_ADDR_SIZE; j++) {
-			ip_arr[i].a[j] = ip_add.a[j] |
-				~get_msk_part(RTE_FIB6_MAXDEPTH - i, j);
+		ip_arr[i] = ip_add;
+		j = (RTE_FIB6_MAXDEPTH - i) / CHAR_BIT;
+		if (j < RTE_FIB6_IPV6_ADDR_SIZE) {
+			ip_arr[i].a[j] |= UINT8_MAX >> ((RTE_FIB6_MAXDEPTH - i) % CHAR_BIT);
+			for (j++; j < RTE_FIB6_IPV6_ADDR_SIZE; j++)
+				ip_arr[i].a[j] = 0xff;
 		}
 	}
 

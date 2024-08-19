@@ -57,6 +57,9 @@ struct rte_rib6_conf {
  * @param src
  *  pointer from where to copy
  */
+static inline void rte_rib6_copy_addr(uint8_t *dst, const uint8_t *src)
+	__rte_deprecated_msg("use direct struct assignment");
+
 static inline void
 rte_rib6_copy_addr(uint8_t *dst, const uint8_t *src)
 {
@@ -77,6 +80,9 @@ rte_rib6_copy_addr(uint8_t *dst, const uint8_t *src)
  *  1 if equal
  *  0 otherwise
  */
+static inline int rte_rib6_is_equal(const uint8_t *ip1, const uint8_t *ip2)
+	__rte_deprecated_msg("use rte_ipv6_addr_eq");
+
 static inline int
 rte_rib6_is_equal(const uint8_t *ip1, const uint8_t *ip2) {
 	int i;
@@ -101,6 +107,8 @@ rte_rib6_is_equal(const uint8_t *ip1, const uint8_t *ip2) {
  * @return
  *  8-bit chunk of the 128-bit IPv6 mask
  */
+static inline uint8_t get_msk_part(uint8_t depth, int byte) __rte_deprecated;
+
 static inline uint8_t
 get_msk_part(uint8_t depth, int byte) {
 	uint8_t part;

@@ -452,14 +452,6 @@ get_nxt_net(struct rte_ipv6_addr *ip, uint8_t depth)
 }
 
 static int
-v6_addr_is_zero(const uint8_t ip[RTE_FIB6_IPV6_ADDR_SIZE])
-{
-	uint8_t ip_addr[RTE_FIB6_IPV6_ADDR_SIZE] = {0};
-
-	return rte_rib6_is_equal(ip, ip_addr);
-}
-
-static int
 modify_dp(struct rte_trie_tbl *dp, struct rte_rib6 *rib,
 	const struct rte_ipv6_addr *ip,
 	uint8_t depth, uint64_t next_hop)
@@ -481,7 +473,7 @@ modify_dp(struct rte_trie_tbl *dp, struct rte_rib6 *rib,
 			if (tmp_depth == depth)
 				continue;
 			rte_rib6_get_ip(tmp, &redge);
-			if (rte_rib6_is_equal(ledge.a, redge.a)) {
+			if (rte_ipv6_addr_eq(&ledge, &redge)) {
 				get_nxt_net(&ledge, tmp_depth);
 				continue;
 			}
@@ -494,13 +486,13 @@ modify_dp(struct rte_trie_tbl *dp, struct rte_rib6 *rib,
 			 * we got to the end of address space
 			 * and wrapped around
 			 */
-			if (v6_addr_is_zero(ledge.a))
+			if (rte_ipv6_addr_is_unspec(&ledge))
 				break;
 		} else {
 			redge = *ip;
 			get_nxt_net(&redge, depth);
-			if (rte_rib6_is_equal(ledge.a, redge.a) &&
-					!v6_addr_is_zero(ledge.a))
+			if (rte_ipv6_addr_eq(&ledge, &redge) &&
+					!rte_ipv6_addr_is_unspec(&ledge))
 				break;
 
 			ret = install_to_dp(dp, &ledge, &redge, next_hop);
@@ -522,7 +514,7 @@ trie_modify(struct rte_fib6 *fib, const struct rte_ipv6_addr *ip,
 	struct rte_rib6_node *node;
 	struct rte_rib6_node *parent;
 	struct rte_ipv6_addr ip_masked;
-	int i, ret = 0;
+	int ret = 0;
 	uint64_t par_nh, node_nh;
 	uint8_t tmp_depth, depth_diff = 0, parent_depth = 24;
 
@@ -534,8 +526,8 @@ trie_modify(struct rte_fib6 *fib, const struct rte_ipv6_addr *ip,
 	rib = rte_fib6_get_rib(fib);
 	RTE_ASSERT(rib);
 
-	for (i = 0; i < RTE_FIB6_IPV6_ADDR_SIZE; i++)
-		ip_masked.a[i] = ip->a[i] & get_msk_part(depth, i);
+	ip_masked = *ip;
+	rte_ipv6_addr_mask(&ip_masked, depth);
 
 	if (depth > 24) {
 		tmp = rte_rib6_get_nxt(rib, &ip_masked,
