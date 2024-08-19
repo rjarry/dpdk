@@ -872,12 +872,8 @@ encap_vxlan_apply(void *data,
 			d->ipv6.payload_len = 0; /* not pre-computed */
 			d->ipv6.proto = IP_PROTO_UDP;
 			d->ipv6.hop_limits = p->vxlan.ipv6.hop_limit;
-			memcpy(&d->ipv6.src_addr,
-				p->vxlan.ipv6.sa,
-				sizeof(p->vxlan.ipv6.sa));
-			memcpy(&d->ipv6.dst_addr,
-				p->vxlan.ipv6.da,
-				sizeof(p->vxlan.ipv6.da));
+			d->ipv6.src_addr = p->vxlan.ipv6.sa;
+			d->ipv6.dst_addr = p->vxlan.ipv6.da;
 
 			/* UDP */
 			d->udp.src_port = rte_htons(p->vxlan.udp.sp);
@@ -907,12 +903,8 @@ encap_vxlan_apply(void *data,
 			d->ipv6.payload_len = 0; /* not pre-computed */
 			d->ipv6.proto = IP_PROTO_UDP;
 			d->ipv6.hop_limits = p->vxlan.ipv6.hop_limit;
-			memcpy(&d->ipv6.src_addr,
-				p->vxlan.ipv6.sa,
-				sizeof(p->vxlan.ipv6.sa));
-			memcpy(&d->ipv6.dst_addr,
-				p->vxlan.ipv6.da,
-				sizeof(p->vxlan.ipv6.da));
+			d->ipv6.src_addr = p->vxlan.ipv6.sa;
+			d->ipv6.dst_addr = p->vxlan.ipv6.da;
 
 			/* UDP */
 			d->udp.src_port = rte_htons(p->vxlan.udp.sp);
@@ -1211,7 +1203,7 @@ struct nat_ipv4_data {
 } __rte_packed;
 
 struct nat_ipv6_data {
-	uint8_t addr[16];
+	struct in6_addr addr;
 	uint16_t port;
 } __rte_packed;
 
@@ -1258,7 +1250,7 @@ nat_apply(void *data,
 	} else {
 		struct nat_ipv6_data *d = data;
 
-		memcpy(d->addr, p->addr.ipv6, sizeof(d->addr));
+		d->addr = p->addr.ipv6;
 		d->port = rte_htons(p->port);
 	}
 
@@ -1438,11 +1430,11 @@ pkt_ipv6_work_nat(struct rte_ipv6_hdr *ip,
 
 			tcp_cksum = nat_ipv6_tcp_udp_checksum_update(tcp->cksum,
 				(uint16_t *)&ip->src_addr,
-				(uint16_t *)data->addr,
+				(uint16_t *)&data->addr,
 				tcp->src_port,
 				data->port);
 
-			rte_memcpy(&ip->src_addr, data->addr, 16);
+			ip->src_addr = data->addr;
 			tcp->src_port = data->port;
 			tcp->cksum = tcp_cksum;
 		} else {
@@ -1451,11 +1443,11 @@ pkt_ipv6_work_nat(struct rte_ipv6_hdr *ip,
 
 			udp_cksum = nat_ipv6_tcp_udp_checksum_update(udp->dgram_cksum,
 				(uint16_t *)&ip->src_addr,
-				(uint16_t *)data->addr,
+				(uint16_t *)&data->addr,
 				udp->src_port,
 				data->port);
 
-			rte_memcpy(&ip->src_addr, data->addr, 16);
+			ip->src_addr = data->addr;
 			udp->src_port = data->port;
 			udp->dgram_cksum = udp_cksum;
 		}
@@ -1466,11 +1458,11 @@ pkt_ipv6_work_nat(struct rte_ipv6_hdr *ip,
 
 			tcp_cksum = nat_ipv6_tcp_udp_checksum_update(tcp->cksum,
 				(uint16_t *)&ip->dst_addr,
-				(uint16_t *)data->addr,
+				(uint16_t *)&data->addr,
 				tcp->dst_port,
 				data->port);
 
-			rte_memcpy(&ip->dst_addr, data->addr, 16);
+			ip->dst_addr = data->addr;
 			tcp->dst_port = data->port;
 			tcp->cksum = tcp_cksum;
 		} else {
@@ -1479,11 +1471,11 @@ pkt_ipv6_work_nat(struct rte_ipv6_hdr *ip,
 
 			udp_cksum = nat_ipv6_tcp_udp_checksum_update(udp->dgram_cksum,
 				(uint16_t *)&ip->dst_addr,
-				(uint16_t *)data->addr,
+				(uint16_t *)&data->addr,
 				udp->dst_port,
 				data->port);
 
-			rte_memcpy(&ip->dst_addr, data->addr, 16);
+			ip->dst_addr = data->addr;
 			udp->dst_port = data->port;
 			udp->dgram_cksum = udp_cksum;
 		}
