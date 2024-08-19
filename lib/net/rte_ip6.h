@@ -35,6 +35,15 @@
 extern "C" {
 #endif
 
+#define RTE_IPV6_ADDR_SIZE 16
+
+/**
+ * IPv6 Address
+ */
+struct rte_ipv6_addr {
+	uint8_t a[RTE_IPV6_ADDR_SIZE];
+};
+
 /**
  * IPv6 Header
  */
