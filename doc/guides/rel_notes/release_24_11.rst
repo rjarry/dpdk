@@ -238,6 +238,11 @@ New Features
   Added ability for node to advertise and update multiple xstat counters,
   that can be retrieved using ``rte_graph_cluster_stats_get``.
 
+* **Added IPv6 address structure and related utilities.**
+
+  A new IPv6 address structure is now available in ``rte_ip6.h``.
+  It comes with a set of helper functions and macros.
+
 
 Removed Items
 -------------
