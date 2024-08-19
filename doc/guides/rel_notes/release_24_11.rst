@@ -188,6 +188,7 @@ API Changes
 * pipeline: ``rte_swx_ipsec_sa_encap_params`` was modified to use ``rte_ipv6_addr`` instead of ``in6_addr``.
 * ipsec: ``rte_ipsec_sadv6_key`` was modified to use ``struct rte_ipv6_addr`` instead of ``uint8_t[16]`` fields.
 * security: ``rte_security_ipsec_tunnel_param`` was modified to use ``rte_ipv6_addr`` instead of ``in6_addr``.
+* hash: ``rte_ipv6_tuple`` was modified to use ``struct rte_ipv6_addr`` instead of ``uint8_t[16]`` fields.
 
 ABI Changes
 -----------
