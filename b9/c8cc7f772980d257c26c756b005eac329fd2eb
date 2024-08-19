@@ -1,0 +1,7 @@
+v3:
+
+- replaced custom rte_ipv6_addr with standard in6_addr struct
+- replaced {rte_,}memcpy with struct assignments
+- replaced string initializers with literal arrays
+
+v2: updated changelog for 24.11
