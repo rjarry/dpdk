@@ -16,6 +16,7 @@
 
 #include <rte_memcpy.h>
 #include <rte_common.h>
+#include <rte_ip6.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -124,7 +125,7 @@ get_msk_part(uint8_t depth, int byte) {
  */
 struct rte_rib6_node *
 rte_rib6_lookup(struct rte_rib6 *rib,
-	const uint8_t ip[RTE_RIB6_IPV6_ADDR_SIZE]);
+	const struct in6_addr *ip);
 
 /**
  * Lookup less specific route into the RIB structure
@@ -154,7 +155,7 @@ rte_rib6_lookup_parent(struct rte_rib6_node *ent);
  */
 struct rte_rib6_node *
 rte_rib6_lookup_exact(struct rte_rib6 *rib,
-	const uint8_t ip[RTE_RIB6_IPV6_ADDR_SIZE], uint8_t depth);
+	const struct in6_addr *ip, uint8_t depth);
 
 /**
  * Retrieve next more specific prefix from the RIB
@@ -181,7 +182,7 @@ rte_rib6_lookup_exact(struct rte_rib6 *rib,
  */
 struct rte_rib6_node *
 rte_rib6_get_nxt(struct rte_rib6 *rib,
-	const uint8_t ip[RTE_RIB6_IPV6_ADDR_SIZE],
+	const struct in6_addr *ip,
 	uint8_t depth, struct rte_rib6_node *last, int flag);
 
 /**
@@ -196,7 +197,7 @@ rte_rib6_get_nxt(struct rte_rib6 *rib,
  */
 void
 rte_rib6_remove(struct rte_rib6 *rib,
-	const uint8_t ip[RTE_RIB6_IPV6_ADDR_SIZE], uint8_t depth);
+	const struct in6_addr *ip, uint8_t depth);
 
 /**
  * Insert prefix into the RIB
@@ -213,7 +214,7 @@ rte_rib6_remove(struct rte_rib6 *rib,
  */
 struct rte_rib6_node *
 rte_rib6_insert(struct rte_rib6 *rib,
-	const uint8_t ip[RTE_RIB6_IPV6_ADDR_SIZE], uint8_t depth);
+	const struct in6_addr *ip, uint8_t depth);
 
 /**
  * Get an ip from rte_rib6_node
@@ -228,7 +229,7 @@ rte_rib6_insert(struct rte_rib6 *rib,
  */
 int
 rte_rib6_get_ip(const struct rte_rib6_node *node,
-		uint8_t ip[RTE_RIB6_IPV6_ADDR_SIZE]);
+		struct in6_addr *ip);
 
 /**
  * Get a depth from rte_rib6_node

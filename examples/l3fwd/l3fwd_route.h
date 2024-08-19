@@ -2,6 +2,8 @@
  * Copyright(c) 2021 Intel Corporation
  */
 
+#include <rte_ip6.h>
+
 /* Log file related character defs. */
 #define COMMENT_LEAD_CHAR	('#')
 #define ROUTE_LEAD_CHAR		('R')
@@ -53,10 +55,7 @@ struct ipv6_5tuple {
 struct lpm_route_rule {
 	union {
 		uint32_t ip;
-		union {
-			uint32_t ip_32[IPV6_ADDR_U32];
-			uint8_t ip_8[IPV6_ADDR_LEN];
-		};
+		struct in6_addr ip6;
 	};
 	uint8_t depth;
 	uint8_t if_out;
