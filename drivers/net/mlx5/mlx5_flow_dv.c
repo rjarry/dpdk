@@ -7697,12 +7697,8 @@ const struct rte_flow_item_ipv4 nic_ipv4_mask = {
 
 const struct rte_flow_item_ipv6 nic_ipv6_mask = {
 	.hdr = {
-		.src_addr =
-		"\xff\xff\xff\xff\xff\xff\xff\xff"
-		"\xff\xff\xff\xff\xff\xff\xff\xff",
-		.dst_addr =
-		"\xff\xff\xff\xff\xff\xff\xff\xff"
-		"\xff\xff\xff\xff\xff\xff\xff\xff",
+		.src_addr = RTE_IPV6_ADDR_BCAST_INIT,
+		.dst_addr = RTE_IPV6_ADDR_BCAST_INIT,
 		.vtc_flow = RTE_BE32(0xffffffff),
 		.proto = 0xff,
 		.hop_limits = 0xff,
@@ -9549,12 +9545,8 @@ flow_dv_translate_item_ipv6(void *key, const struct rte_flow_item *item,
 	const struct rte_flow_item_ipv6 *ipv6_v;
 	const struct rte_flow_item_ipv6 nic_mask = {
 		.hdr = {
-			.src_addr =
-				"\xff\xff\xff\xff\xff\xff\xff\xff"
-				"\xff\xff\xff\xff\xff\xff\xff\xff",
-			.dst_addr =
-				"\xff\xff\xff\xff\xff\xff\xff\xff"
-				"\xff\xff\xff\xff\xff\xff\xff\xff",
+			.src_addr = RTE_IPV6_ADDR_BCAST_INIT,
+			.dst_addr = RTE_IPV6_ADDR_BCAST_INIT,
 			.vtc_flow = RTE_BE32(0xffffffff),
 			.proto = 0xff,
 			.hop_limits = 0xff,
@@ -9577,11 +9569,11 @@ flow_dv_translate_item_ipv6(void *key, const struct rte_flow_item *item,
 	l24_v = MLX5_ADDR_OF(fte_match_set_lyr_2_4, headers_v,
 			     dst_ipv4_dst_ipv6.ipv6_layout.ipv6);
 	for (i = 0; i < size; ++i)
-		l24_v[i] = ipv6_m->hdr.dst_addr[i] & ipv6_v->hdr.dst_addr[i];
+		l24_v[i] = ipv6_m->hdr.dst_addr.s6_addr[i] & ipv6_v->hdr.dst_addr.s6_addr[i];
 	l24_v = MLX5_ADDR_OF(fte_match_set_lyr_2_4, headers_v,
 			     src_ipv4_src_ipv6.ipv6_layout.ipv6);
 	for (i = 0; i < size; ++i)
-		l24_v[i] = ipv6_m->hdr.src_addr[i] & ipv6_v->hdr.src_addr[i];
+		l24_v[i] = ipv6_m->hdr.src_addr.s6_addr[i] & ipv6_v->hdr.src_addr.s6_addr[i];
 	/* TOS. */
 	vtc_v = rte_be_to_cpu_32(ipv6_m->hdr.vtc_flow & ipv6_v->hdr.vtc_flow);
 	MLX5_SET(fte_match_set_lyr_2_4, headers_v, ip_ecn, vtc_v >> 20);

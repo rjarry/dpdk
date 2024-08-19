@@ -294,28 +294,28 @@ nfp_net_flow_merge_ipv6(struct rte_flow *nfp_flow,
 
 	ipv6->l4_protocol_mask = mask->hdr.proto;
 	for (i = 0; i < sizeof(ipv6->src_ipv6); i += 4) {
-		ipv6->src_ipv6_mask[i] = mask->hdr.src_addr[i + 3];
-		ipv6->src_ipv6_mask[i + 1] = mask->hdr.src_addr[i + 2];
-		ipv6->src_ipv6_mask[i + 2] = mask->hdr.src_addr[i + 1];
-		ipv6->src_ipv6_mask[i + 3] = mask->hdr.src_addr[i];
+		ipv6->src_ipv6_mask[i] = mask->hdr.src_addr.s6_addr[i + 3];
+		ipv6->src_ipv6_mask[i + 1] = mask->hdr.src_addr.s6_addr[i + 2];
+		ipv6->src_ipv6_mask[i + 2] = mask->hdr.src_addr.s6_addr[i + 1];
+		ipv6->src_ipv6_mask[i + 3] = mask->hdr.src_addr.s6_addr[i];
 
-		ipv6->dst_ipv6_mask[i] = mask->hdr.dst_addr[i + 3];
-		ipv6->dst_ipv6_mask[i + 1] = mask->hdr.dst_addr[i + 2];
-		ipv6->dst_ipv6_mask[i + 2] = mask->hdr.dst_addr[i + 1];
-		ipv6->dst_ipv6_mask[i + 3] = mask->hdr.dst_addr[i];
+		ipv6->dst_ipv6_mask[i] = mask->hdr.dst_addr.s6_addr[i + 3];
+		ipv6->dst_ipv6_mask[i + 1] = mask->hdr.dst_addr.s6_addr[i + 2];
+		ipv6->dst_ipv6_mask[i + 2] = mask->hdr.dst_addr.s6_addr[i + 1];
+		ipv6->dst_ipv6_mask[i + 3] = mask->hdr.dst_addr.s6_addr[i];
 	}
 
 	ipv6->l4_protocol = spec->hdr.proto;
 	for (i = 0; i < sizeof(ipv6->src_ipv6); i += 4) {
-		ipv6->src_ipv6[i] = spec->hdr.src_addr[i + 3];
-		ipv6->src_ipv6[i + 1] = spec->hdr.src_addr[i + 2];
-		ipv6->src_ipv6[i + 2] = spec->hdr.src_addr[i + 1];
-		ipv6->src_ipv6[i + 3] = spec->hdr.src_addr[i];
+		ipv6->src_ipv6[i] = spec->hdr.src_addr.s6_addr[i + 3];
+		ipv6->src_ipv6[i + 1] = spec->hdr.src_addr.s6_addr[i + 2];
+		ipv6->src_ipv6[i + 2] = spec->hdr.src_addr.s6_addr[i + 1];
+		ipv6->src_ipv6[i + 3] = spec->hdr.src_addr.s6_addr[i];
 
-		ipv6->dst_ipv6[i] = spec->hdr.dst_addr[i + 3];
-		ipv6->dst_ipv6[i + 1] = spec->hdr.dst_addr[i + 2];
-		ipv6->dst_ipv6[i + 2] = spec->hdr.dst_addr[i + 1];
-		ipv6->dst_ipv6[i + 3] = spec->hdr.dst_addr[i];
+		ipv6->dst_ipv6[i] = spec->hdr.dst_addr.s6_addr[i + 3];
+		ipv6->dst_ipv6[i + 1] = spec->hdr.dst_addr.s6_addr[i + 2];
+		ipv6->dst_ipv6[i + 2] = spec->hdr.dst_addr.s6_addr[i + 1];
+		ipv6->dst_ipv6[i + 3] = spec->hdr.dst_addr.s6_addr[i];
 	}
 
 	return 0;
@@ -403,10 +403,8 @@ static const struct nfp_net_flow_item_proc nfp_net_flow_item_proc_list[] = {
 		.mask_support = &(const struct rte_flow_item_ipv6){
 			.hdr = {
 				.proto    = 0xff,
-				.src_addr = "\xff\xff\xff\xff\xff\xff\xff\xff"
-						"\xff\xff\xff\xff\xff\xff\xff\xff",
-				.dst_addr = "\xff\xff\xff\xff\xff\xff\xff\xff"
-						"\xff\xff\xff\xff\xff\xff\xff\xff",
+				.src_addr = RTE_IPV6_ADDR_BCAST_INIT,
+				.dst_addr = RTE_IPV6_ADDR_BCAST_INIT,
 			},
 		},
 		.mask_default = &rte_flow_item_ipv6_mask,

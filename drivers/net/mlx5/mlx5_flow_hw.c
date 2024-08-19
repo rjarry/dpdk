@@ -8250,12 +8250,8 @@ const struct rte_flow_item_ipv6 hws_nic_ipv6_mask = {
 		.payload_len = RTE_BE16(0xffff),
 		.proto = 0xff,
 		.hop_limits = 0xff,
-		.src_addr =
-		"\xff\xff\xff\xff\xff\xff\xff\xff"
-		"\xff\xff\xff\xff\xff\xff\xff\xff",
-		.dst_addr =
-		"\xff\xff\xff\xff\xff\xff\xff\xff"
-		"\xff\xff\xff\xff\xff\xff\xff\xff",
+		.src_addr = RTE_IPV6_ADDR_BCAST_INIT,
+		.dst_addr = RTE_IPV6_ADDR_BCAST_INIT,
 	},
 	.has_frag_ext = 1,
 };
@@ -14645,10 +14641,10 @@ flow_hw_calc_encap_hash(struct rte_eth_dev *dev,
 			break;
 		case RTE_FLOW_ITEM_TYPE_IPV6:
 			memcpy(data.dst.ipv6_addr,
-			       ((const struct rte_flow_item_ipv6 *)(pattern->spec))->hdr.dst_addr,
+			       &((const struct rte_flow_item_ipv6 *)(pattern->spec))->hdr.dst_addr,
 			       sizeof(data.dst.ipv6_addr));
 			memcpy(data.src.ipv6_addr,
-			       ((const struct rte_flow_item_ipv6 *)(pattern->spec))->hdr.src_addr,
+			       &((const struct rte_flow_item_ipv6 *)(pattern->spec))->hdr.src_addr,
 			       sizeof(data.src.ipv6_addr));
 			break;
 		case RTE_FLOW_ITEM_TYPE_UDP:

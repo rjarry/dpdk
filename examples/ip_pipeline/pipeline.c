@@ -638,7 +638,7 @@ static const struct rte_acl_field_def table_acl_field_format_ipv6[] = {
 		.size = sizeof(uint32_t),
 		.field_index = 1,
 		.input_index = 1,
-		.offset = offsetof(struct rte_ipv6_hdr, src_addr[0]),
+		.offset = offsetof(struct rte_ipv6_hdr, src_addr.s6_addr[0]),
 	},
 
 	[2] = {
@@ -646,7 +646,7 @@ static const struct rte_acl_field_def table_acl_field_format_ipv6[] = {
 		.size = sizeof(uint32_t),
 		.field_index = 2,
 		.input_index = 2,
-		.offset = offsetof(struct rte_ipv6_hdr, src_addr[4]),
+		.offset = offsetof(struct rte_ipv6_hdr, src_addr.s6_addr[4]),
 	},
 
 	[3] = {
@@ -654,7 +654,7 @@ static const struct rte_acl_field_def table_acl_field_format_ipv6[] = {
 		.size = sizeof(uint32_t),
 		.field_index = 3,
 		.input_index = 3,
-		.offset = offsetof(struct rte_ipv6_hdr, src_addr[8]),
+		.offset = offsetof(struct rte_ipv6_hdr, src_addr.s6_addr[8]),
 	},
 
 	[4] = {
@@ -662,7 +662,7 @@ static const struct rte_acl_field_def table_acl_field_format_ipv6[] = {
 		.size = sizeof(uint32_t),
 		.field_index = 4,
 		.input_index = 4,
-		.offset = offsetof(struct rte_ipv6_hdr, src_addr[12]),
+		.offset = offsetof(struct rte_ipv6_hdr, src_addr.s6_addr[12]),
 	},
 
 	/* Destination IP address (IPv6) */
@@ -671,7 +671,7 @@ static const struct rte_acl_field_def table_acl_field_format_ipv6[] = {
 		.size = sizeof(uint32_t),
 		.field_index = 5,
 		.input_index = 5,
-		.offset = offsetof(struct rte_ipv6_hdr, dst_addr[0]),
+		.offset = offsetof(struct rte_ipv6_hdr, dst_addr.s6_addr[0]),
 	},
 
 	[6] = {
@@ -679,7 +679,7 @@ static const struct rte_acl_field_def table_acl_field_format_ipv6[] = {
 		.size = sizeof(uint32_t),
 		.field_index = 6,
 		.input_index = 6,
-		.offset = offsetof(struct rte_ipv6_hdr, dst_addr[4]),
+		.offset = offsetof(struct rte_ipv6_hdr, dst_addr.s6_addr[4]),
 	},
 
 	[7] = {
@@ -687,7 +687,7 @@ static const struct rte_acl_field_def table_acl_field_format_ipv6[] = {
 		.size = sizeof(uint32_t),
 		.field_index = 7,
 		.input_index = 7,
-		.offset = offsetof(struct rte_ipv6_hdr, dst_addr[8]),
+		.offset = offsetof(struct rte_ipv6_hdr, dst_addr.s6_addr[8]),
 	},
 
 	[8] = {
@@ -695,7 +695,7 @@ static const struct rte_acl_field_def table_acl_field_format_ipv6[] = {
 		.size = sizeof(uint32_t),
 		.field_index = 8,
 		.input_index = 8,
-		.offset = offsetof(struct rte_ipv6_hdr, dst_addr[12]),
+		.offset = offsetof(struct rte_ipv6_hdr, dst_addr.s6_addr[12]),
 	},
 
 	/* Source Port */
