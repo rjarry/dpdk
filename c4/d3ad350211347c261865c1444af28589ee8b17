@@ -1,0 +1,7 @@
+v3:
+
+- replace *memcpy(ipv6) with direct struct assignments
+- replace RTE_IPV6_ADDR() invocations with RTE_IPV6()
+- replace string initializers with RTE_IPV6_FULL_MASK or RTE_IPV6()
+- use RTE_IPV6_ADDR_FMT and RTE_IPV6_ADDR_SPLIT where possible
+- replace stray in6_addr with rte_ipv6_addr in drivers/net/mvpp2/mrvl_flow.c
