@@ -293,6 +293,12 @@ API Changes
 * node: ``rte_node_ip6_route_add()`` was modified to use a ``struct rte_ipv6_addr`` instead of
   ``uint8_t[16]`` parameter.
 
+* pipeline: the ``rte_table_action_ipv6_header`` and ``rte_table_action_nat_params`` structures
+  were modified to use ``struct rte_ipv6_addr`` instead of ``uint8_t[16]`` fields.
+
+* pipeline: the ``rte_swx_ipsec_sa_encap_params`` was modified to use ``struct rte_ipv6_addr``
+  instead of ``struct in6_addr`` fields.
+
 
 ABI Changes
 -----------
