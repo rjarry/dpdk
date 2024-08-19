@@ -281,6 +281,9 @@ API Changes
 * drivers/net/ena: Removed ``enable_llq``, ``normal_llq_hdr`` and ``large_llq_hdr`` devargs
   and replaced it with a new shared devarg ``llq_policy`` that keeps the same logic.
 
+* net: The ``rte_ipv6_hdr`` structure was modified to use ``struct rte_ipv6_addr`` instead of
+  ``uint8_t[16]`` fields.
+
 
 ABI Changes
 -----------
