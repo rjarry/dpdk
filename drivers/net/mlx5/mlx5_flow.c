@@ -2933,12 +2933,8 @@ mlx5_flow_validate_item_ipv6(const struct rte_eth_dev *dev,
 	const struct rte_flow_item_ipv6 *spec = item->spec;
 	const struct rte_flow_item_ipv6 nic_mask = {
 		.hdr = {
-			.src_addr =
-				"\xff\xff\xff\xff\xff\xff\xff\xff"
-				"\xff\xff\xff\xff\xff\xff\xff\xff",
-			.dst_addr =
-				"\xff\xff\xff\xff\xff\xff\xff\xff"
-				"\xff\xff\xff\xff\xff\xff\xff\xff",
+			.src_addr = RTE_IPV6_MASK_FULL,
+			.dst_addr = RTE_IPV6_MASK_FULL,
 			.vtc_flow = RTE_BE32(0xffffffff),
 			.proto = 0xff,
 		},

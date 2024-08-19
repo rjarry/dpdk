@@ -180,6 +180,7 @@ API Changes
    =======================================================
 
 * net: IPv6 related symbols were moved from ``<rte_ip.h>`` to the new ``<rte_ip6.h>`` header.
+* net: The ``rte_ipv6_hdr`` structure was modified to use ``struct rte_ipv6_addr`` instead of ``uint8_t[16]`` fields.
 
 ABI Changes
 -----------
