@@ -101,6 +101,7 @@ API Changes
 * rib6,fib6,lpm6: All public API functions were modified to use ``struct in6_addr`` instead of ``uint8_t[16]`` parameters.
 * node: ``rte_node_ip6_route_add()`` was modified to use a ``struct in6_addr`` instead of ``uint8_t[16]`` parameter.
 * pipeline: ``rte_table_action_ipv6_header`` and ``rte_table_action_nat_params`` were modified to use ``in6_addr`` structures instead of ``uint8_t[16]`` fields.
+* ipsec: ``rte_ipsec_sadv6_key`` was modified to use ``in6_addr`` structures instead of ``uint8_t[16]`` fields.
 
 ABI Changes
 -----------

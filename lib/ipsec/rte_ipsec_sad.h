@@ -6,8 +6,9 @@
 #ifndef _RTE_IPSEC_SAD_H_
 #define _RTE_IPSEC_SAD_H_
 
-#include <stdint.h>
+#include <rte_ip6.h>
 
+#include <stdint.h>
 
 /**
  * @file rte_ipsec_sad.h
@@ -38,8 +39,8 @@ struct rte_ipsec_sadv4_key {
 
 struct rte_ipsec_sadv6_key {
 	uint32_t spi;
-	uint8_t dip[16];
-	uint8_t sip[16];
+	struct in6_addr dip;
+	struct in6_addr sip;
 };
 
 union rte_ipsec_sad_key {
