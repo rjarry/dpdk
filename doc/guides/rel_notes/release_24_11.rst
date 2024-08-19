@@ -103,6 +103,7 @@ API Changes
 * pipeline: ``rte_table_action_ipv6_header`` and ``rte_table_action_nat_params`` were modified to use ``in6_addr`` structures instead of ``uint8_t[16]`` fields.
 * ipsec: ``rte_ipsec_sadv6_key`` was modified to use ``in6_addr`` structures instead of ``uint8_t[16]`` fields.
 * hash: ``rte_ipv6_tuple`` was modified to use ``in6_addr`` structures instead of ``uint8_t[16]`` fields.
+* gro: ``tcp6_flow_key`` was modified to use ``in6_addr`` structures instead of ``uint8_t[16]`` fields.
 
 ABI Changes
 -----------
