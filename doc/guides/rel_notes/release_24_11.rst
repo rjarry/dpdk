@@ -311,6 +311,14 @@ API Changes
 * gro: ``tcp6_flow_key`` was modified to use ``struct rte_ipv6_addr`` instead of ``uint8_t[16]``
   fields.
 
+* ethdev: the following structures were modified to use ``struct rte_ipv6_addr`` instead of
+  ``uint8_t[16]`` fields:
+
+  * ``struct rte_flow_action_set_ipv6``
+  * ``struct rte_flow_item_icmp6_nd_na``
+  * ``struct rte_flow_item_icmp6_nd_ns``
+  * ``struct rte_flow_tunnel``
+
 
 ABI Changes
 -----------
