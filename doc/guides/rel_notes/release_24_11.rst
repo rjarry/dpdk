@@ -305,6 +305,9 @@ API Changes
 * security: ``rte_security_ipsec_tunnel_param`` was modified to use ``struct rte_ipv6_addr`` instead
   of ``struct in6_addr``.
 
+* hash: ``rte_ipv6_tuple`` was modified to use ``struct rte_ipv6_addr`` instead of ``uint8_t[16]``
+  fields.
+
 
 ABI Changes
 -----------
