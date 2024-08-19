@@ -70,36 +70,16 @@ Deprecation Notices
     - ``struct rte_flow_item_icmp6_nd_na``
     - ``struct rte_flow_action_set_ipv6``
     - ``struct rte_flow_tunnel``
-  fib
-    - ``rte_fib6_add()``
-    - ``rte_fib6_delete()``
-    - ``rte_fib6_lookup_bulk()``
   gro
     - ``struct tcp6_flow_key``
   hash
     - ``struct rte_ipv6_tuple``
   ipsec
     - ``struct rte_ipsec_sadv6_key``
-  lpm
-    - ``rte_lpm6_add()``
-    - ``rte_lpm6_is_rule_present()``
-    - ``rte_lpm6_delete()``
-    - ``rte_lpm6_delete_bulk_func()``
-    - ``rte_lpm6_lookup()``
-    - ``rte_lpm6_lookup_bulk_func()``
   node
     - ``rte_node_ip6_route_add()``
   pipeline
     - ``struct rte_table_action_ipv6_header``
-  rib
-    - ``rte_rib6_lookup()``
-    - ``rte_rib6_lookup_exact()``
-    - ``rte_rib6_get_nxt()``
-    - ``rte_rib6_insert()``
-    - ``rte_rib6_remove()``
-    - ``rte_rib6_get_ip()``
-  table
-    - ``struct rte_table_lpm_ipv6_key``
 
 * net, ethdev: The flow item ``RTE_FLOW_ITEM_TYPE_VXLAN_GPE``
   is replaced with ``RTE_FLOW_ITEM_TYPE_VXLAN``.
