@@ -215,7 +215,7 @@ test_get_fn(void)
 
 	/* check the return values */
 	ret = rte_rib6_get_ip(node, &ip_ret);
-	RTE_TEST_ASSERT((ret == 0) && (rte_rib6_is_equal(ip_ret.s6_addr, ip.s6_addr)),
+	RTE_TEST_ASSERT((ret == 0) && (IN6_ARE_ADDR_EQUAL(&ip_ret, &ip)),
 		"Failed to get proper node ip\n");
 	ret = rte_rib6_get_depth(node, &depth_ret);
 	RTE_TEST_ASSERT((ret == 0) && (depth_ret == depth),

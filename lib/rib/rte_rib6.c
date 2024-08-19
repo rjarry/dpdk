@@ -62,22 +62,6 @@ is_right_node(const struct rte_rib6_node *node)
 	return node->parent->right == node;
 }
 
-/*
- * Check if ip1 is covered by ip2/depth prefix
- */
-static inline bool
-is_covered(const uint8_t ip1[RTE_RIB6_IPV6_ADDR_SIZE],
-		const uint8_t ip2[RTE_RIB6_IPV6_ADDR_SIZE], uint8_t depth)
-{
-	int i;
-
-	for (i = 0; i < RTE_RIB6_IPV6_ADDR_SIZE; i++)
-		if ((ip1[i] ^ ip2[i]) & get_msk_part(depth, i))
-			return false;
-
-	return true;
-}
-
 static inline int
 get_dir(const struct in6_addr *ip, uint8_t depth)
 {
@@ -144,7 +128,7 @@ rte_rib6_lookup(struct rte_rib6 *rib,
 	}
 	cur = rib->tree;
 
-	while ((cur != NULL) && is_covered(ip->s6_addr, cur->ip.s6_addr, cur->depth)) {
+	while ((cur != NULL) && rte_ipv6_addr_eq_prefix(ip, &cur->ip, cur->depth)) {
 		if (is_valid_node(cur))
 			prev = cur;
 		cur = get_nxt_node(cur, ip);
@@ -173,7 +157,6 @@ rte_rib6_lookup_exact(struct rte_rib6 *rib,
 {
 	struct rte_rib6_node *cur;
 	struct in6_addr tmp_ip;
-	int i;
 
 	if (unlikely(rib == NULL || ip == NULL || depth > RIB6_MAXDEPTH)) {
 		rte_errno = EINVAL;
@@ -181,16 +164,16 @@ rte_rib6_lookup_exact(struct rte_rib6 *rib,
 	}
 	cur = rib->tree;
 
-	for (i = 0; i < RTE_RIB6_IPV6_ADDR_SIZE; i++)
-		tmp_ip.s6_addr[i] = ip->s6_addr[i] & get_msk_part(depth, i);
+	tmp_ip = *ip;
+	rte_ipv6_addr_mask(&tmp_ip, depth);
 
 	while (cur != NULL) {
-		if (rte_rib6_is_equal(cur->ip.s6_addr, tmp_ip.s6_addr) &&
+		if (IN6_ARE_ADDR_EQUAL(&cur->ip, &tmp_ip) &&
 				(cur->depth == depth) &&
 				is_valid_node(cur))
 			return cur;
 
-		if (!(is_covered(tmp_ip.s6_addr, cur->ip.s6_addr, cur->depth)) ||
+		if (!rte_ipv6_addr_eq_prefix(&tmp_ip, &cur->ip, cur->depth) ||
 				(cur->depth >= depth))
 			break;
 
@@ -212,15 +195,14 @@ rte_rib6_get_nxt(struct rte_rib6 *rib,
 {
 	struct rte_rib6_node *tmp, *prev = NULL;
 	struct in6_addr tmp_ip;
-	int i;
 
 	if (unlikely(rib == NULL || ip == NULL || depth > RIB6_MAXDEPTH)) {
 		rte_errno = EINVAL;
 		return NULL;
 	}
 
-	for (i = 0; i < RTE_RIB6_IPV6_ADDR_SIZE; i++)
-		tmp_ip.s6_addr[i] = ip->s6_addr[i] & get_msk_part(depth, i);
+	tmp_ip = *ip;
+	rte_ipv6_addr_mask(&tmp_ip, depth);
 
 	if (last == NULL) {
 		tmp = rib->tree;
@@ -232,7 +214,7 @@ rte_rib6_get_nxt(struct rte_rib6 *rib,
 				(tmp->parent->right == NULL))) {
 			tmp = tmp->parent;
 			if (is_valid_node(tmp) &&
-					(is_covered(tmp->ip.s6_addr, tmp_ip.s6_addr, depth) &&
+					(rte_ipv6_addr_eq_prefix(&tmp->ip, &tmp_ip, depth) &&
 					(tmp->depth > depth)))
 				return tmp;
 		}
@@ -240,7 +222,7 @@ rte_rib6_get_nxt(struct rte_rib6 *rib,
 	}
 	while (tmp) {
 		if (is_valid_node(tmp) &&
-				(is_covered(tmp->ip.s6_addr, tmp_ip.s6_addr, depth) &&
+				(rte_ipv6_addr_eq_prefix(&tmp->ip, &tmp_ip, depth) &&
 				(tmp->depth > depth))) {
 			prev = tmp;
 			if (flag == RTE_RIB6_GET_NXT_COVER)
@@ -304,8 +286,8 @@ rte_rib6_insert(struct rte_rib6 *rib,
 
 	tmp = &rib->tree;
 
-	for (i = 0; i < RTE_RIB6_IPV6_ADDR_SIZE; i++)
-		tmp_ip.s6_addr[i] = ip->s6_addr[i] & get_msk_part(depth, i);
+	tmp_ip = *ip;
+	rte_ipv6_addr_mask(&tmp_ip, depth);
 
 	new_node = rte_rib6_lookup_exact(rib, &tmp_ip, depth);
 	if (new_node != NULL) {
@@ -340,15 +322,14 @@ rte_rib6_insert(struct rte_rib6 *rib,
 		 * but node with proper search criteria is found.
 		 * Validate intermediate node and return.
 		 */
-		if (rte_rib6_is_equal(tmp_ip.s6_addr, (*tmp)->ip.s6_addr) &&
-				(depth == (*tmp)->depth)) {
+		if (IN6_ARE_ADDR_EQUAL(&tmp_ip, &(*tmp)->ip) && (depth == (*tmp)->depth)) {
 			node_free(rib, new_node);
 			(*tmp)->flag |= RTE_RIB_VALID_NODE;
 			++rib->cur_routes;
 			return *tmp;
 		}
 
-		if (!is_covered(tmp_ip.s6_addr, (*tmp)->ip.s6_addr, (*tmp)->depth) ||
+		if (!rte_ipv6_addr_eq_prefix(&tmp_ip, &(*tmp)->ip, (*tmp)->depth) ||
 				((*tmp)->depth >= depth)) {
 			break;
 		}
@@ -372,10 +353,10 @@ rte_rib6_insert(struct rte_rib6 *rib,
 
 	common_depth = RTE_MIN(d, common_depth);
 
-	for (i = 0; i < RTE_RIB6_IPV6_ADDR_SIZE; i++)
-		common_prefix.s6_addr[i] = tmp_ip.s6_addr[i] & get_msk_part(common_depth, i);
+	common_prefix = tmp_ip;
+	rte_ipv6_addr_mask(&common_prefix, common_depth);
 
-	if (rte_rib6_is_equal(common_prefix.s6_addr, tmp_ip.s6_addr) &&
+	if (IN6_ARE_ADDR_EQUAL(&common_prefix, &tmp_ip) &&
 			(common_depth == depth)) {
 		/* insert as a parent */
 		if (get_dir(&(*tmp)->ip, depth))
