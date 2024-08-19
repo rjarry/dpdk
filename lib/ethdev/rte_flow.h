@@ -1499,16 +1499,14 @@ struct rte_flow_item_icmp6_nd_ns {
 	uint8_t code; /**< ICMPv6 code, normally 0. */
 	rte_be16_t checksum; /**< ICMPv6 checksum. */
 	rte_be32_t reserved; /**< Reserved, normally 0. */
-	uint8_t target_addr[16]; /**< Target address. */
+	struct in6_addr target_addr; /**< Target address. */
 };
 
 /** Default mask for RTE_FLOW_ITEM_TYPE_ICMP6_ND_NS. */
 #ifndef __cplusplus
 static const
 struct rte_flow_item_icmp6_nd_ns rte_flow_item_icmp6_nd_ns_mask = {
-	.target_addr =
-		"\xff\xff\xff\xff\xff\xff\xff\xff"
-		"\xff\xff\xff\xff\xff\xff\xff\xff",
+	.target_addr = RTE_IPV6_ADDR_BCAST_INIT,
 };
 #endif
 
@@ -1526,16 +1524,14 @@ struct rte_flow_item_icmp6_nd_na {
 	 * reserved (29b).
 	 */
 	rte_be32_t rso_reserved;
-	uint8_t target_addr[16]; /**< Target address. */
+	struct in6_addr target_addr; /**< Target address. */
 };
 
 /** Default mask for RTE_FLOW_ITEM_TYPE_ICMP6_ND_NA. */
 #ifndef __cplusplus
 static const
 struct rte_flow_item_icmp6_nd_na rte_flow_item_icmp6_nd_na_mask = {
-	.target_addr =
-		"\xff\xff\xff\xff\xff\xff\xff\xff"
-		"\xff\xff\xff\xff\xff\xff\xff\xff",
+	.target_addr = RTE_IPV6_ADDR_BCAST_INIT,
 };
 #endif
 
@@ -3806,7 +3802,7 @@ struct rte_flow_action_set_ipv4 {
  * specified outermost IPv6 header.
  */
 struct rte_flow_action_set_ipv6 {
-	uint8_t ipv6_addr[16];
+	struct in6_addr ipv6_addr;
 };
 
 /**
@@ -5190,8 +5186,8 @@ struct rte_flow_tunnel {
 			rte_be32_t dst_addr; /**< IPv4 destination address. */
 		} ipv4;
 		struct {
-			uint8_t src_addr[16]; /**< IPv6 source address. */
-			uint8_t dst_addr[16]; /**< IPv6 destination address. */
+			struct in6_addr src_addr; /**< IPv6 source address. */
+			struct in6_addr dst_addr; /**< IPv6 destination address. */
 		} ipv6;
 	};
 	rte_be16_t tp_src; /**< Tunnel port source. */
