@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <rte_ip.h>
+#include <rte_ip6.h>
 #include <rte_ether.h>
 
 #define PARSE_DELIMITER				" \f\n\r\t\v"
@@ -39,7 +40,7 @@ int parser_read_uint8_hex(uint8_t *value, const char *p);
 int parse_hex_string(char *src, uint8_t *dst, uint32_t *size);
 
 int parse_ipv4_addr(const char *token, struct in_addr *ipv4);
-int parse_ipv6_addr(const char *token, struct in6_addr *ipv6);
+int parse_ipv6_addr(const char *token, struct rte_ipv6_addr *ipv6);
 int parse_mac_addr(const char *token, struct rte_ether_addr *addr);
 int parse_mpls_labels(char *string, uint32_t *labels, uint32_t *n_labels);
 
