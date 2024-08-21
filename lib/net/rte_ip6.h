@@ -28,6 +28,7 @@
 #include <netinet/ip6.h>
 #endif
 
+#include <rte_ether.h>
 #include <rte_byteorder.h>
 #include <rte_mbuf.h>
 #include <rte_cksum.h>
@@ -176,6 +177,58 @@ rte_ipv6_mask_depth(const struct in6_addr *mask)
 	}
 
 	return depth;
+}
+
+/**
+ * Generate a link-local IPv6 address from an ethernet address as specified in
+ * RFC 2464, section 5.
+ */
+static inline void
+rte_ipv6_llocal_from_ethernet(struct in6_addr *ip, const struct rte_ether_addr *mac)
+{
+	ip->s6_addr[0] = 0xfe;
+	ip->s6_addr[1] = 0x80;
+	memset(&ip->s6_addr[2], 0, 6);
+	ip->s6_addr[8] = mac->addr_bytes[0];
+	ip->s6_addr[9] = mac->addr_bytes[1];
+	ip->s6_addr[10] = mac->addr_bytes[2];
+	ip->s6_addr[11] = 0xff;
+	ip->s6_addr[12] = 0xfe;
+	ip->s6_addr[13] = mac->addr_bytes[3];
+	ip->s6_addr[14] = mac->addr_bytes[4];
+	ip->s6_addr[15] = mac->addr_bytes[5];
+}
+
+/**
+ * Convert a unicast or anycast IPv6 address to a solicited-node multicast
+ * address as defined in RFC 4291, section 2.7.1.
+ */
+static inline void
+rte_ipv6_solnode_from_addr(struct in6_addr *sol, const struct in6_addr *ip)
+{
+	sol->s6_addr[0] = 0xff;
+	sol->s6_addr[1] = 0x02;
+	memset(&sol->s6_addr[2], 0, 9);
+	sol->s6_addr[11] = 0x01;
+	sol->s6_addr[12] = 0xff;
+	sol->s6_addr[13] = ip->s6_addr[13];
+	sol->s6_addr[14] = ip->s6_addr[14];
+	sol->s6_addr[15] = ip->s6_addr[15];
+}
+
+/**
+ * Generate a multicast ethernet address from a multicast IPv6 address as defined
+ * in RFC 2464, section 7.
+ */
+static inline void
+rte_ether_mcast_from_ipv6(struct rte_ether_addr *mac, const struct in6_addr *ip)
+{
+	mac->addr_bytes[0] = 0x33;
+	mac->addr_bytes[1] = 0x33;
+	mac->addr_bytes[2] = ip->s6_addr[12];
+	mac->addr_bytes[3] = ip->s6_addr[13];
+	mac->addr_bytes[4] = ip->s6_addr[14];
+	mac->addr_bytes[5] = ip->s6_addr[15];
 }
 
 /**

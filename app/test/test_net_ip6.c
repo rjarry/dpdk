@@ -78,10 +78,59 @@ test_ipv6_addr_eq_prefix(void)
 }
 
 static int
+test_ipv6_llocal_from_ethernet(void)
+{
+	const struct rte_ether_addr local_mac = {{0x04, 0x7b, 0xcb, 0x5c, 0x08, 0x44}};
+	const struct in6_addr local_ip = RTE_IPV6(0xfe80, 0, 0, 0, 0x047b, 0xcbff, 0xfe5c, 0x0844);
+	struct in6_addr ip;
+
+	rte_ipv6_llocal_from_ethernet(&ip, &local_mac);
+	TEST_ASSERT(IN6_ARE_ADDR_EQUAL(&ip, &local_ip), "");
+
+	return TEST_SUCCESS;
+}
+
+static int
+test_ipv6_solnode_from_addr(void)
+{
+	struct in6_addr sol;
+
+	const struct in6_addr llocal = RTE_IPV6(0xfe80, 0, 0, 0, 0x047b, 0xcbff, 0xfe5c, 0x0844);
+	const struct in6_addr llocal_sol = RTE_IPV6(0xff02, 0, 0, 0, 0, 0x0001, 0xff5c, 0x0844);
+	rte_ipv6_solnode_from_addr(&sol, &llocal);
+	TEST_ASSERT(IN6_ARE_ADDR_EQUAL(&sol, &llocal_sol), "");
+
+	const struct in6_addr ucast =
+		RTE_IPV6(0x2a01, 0xcb00, 0x0254, 0x3300, 0x1b9f, 0x8071, 0x67cd, 0xbf20);
+	const struct in6_addr ucast_sol =
+		RTE_IPV6(0xff02, 0, 0, 0, 0, 0x0001, 0xffcd, 0xbf20);
+	rte_ipv6_solnode_from_addr(&sol, &ucast);
+	TEST_ASSERT(IN6_ARE_ADDR_EQUAL(&sol, &ucast_sol), "");
+
+	return TEST_SUCCESS;
+}
+
+static int
+test_ether_mcast_from_ipv6(void)
+{
+	const struct rte_ether_addr mcast_mac = {{0x33, 0x33, 0xd3, 0x00, 0x02, 0x01}};
+	const struct in6_addr mcast_ip = RTE_IPV6(0xff02, 0, 0, 0x0201, 0, 0, 0xd300, 0x0201);
+	struct rte_ether_addr mac;
+
+	rte_ether_mcast_from_ipv6(&mac, &mcast_ip);
+	TEST_ASSERT(rte_is_same_ether_addr(&mac, &mcast_mac), "");
+
+	return TEST_SUCCESS;
+}
+
+static int
 test_net_ipv6(void)
 {
 	TEST_ASSERT_SUCCESS(test_ipv6_addr_mask(), "");
 	TEST_ASSERT_SUCCESS(test_ipv6_addr_eq_prefix(), "");
+	TEST_ASSERT_SUCCESS(test_ipv6_llocal_from_ethernet(), "");
+	TEST_ASSERT_SUCCESS(test_ipv6_solnode_from_addr(), "");
+	TEST_ASSERT_SUCCESS(test_ether_mcast_from_ipv6(), "");
 	return TEST_SUCCESS;
 }
 
