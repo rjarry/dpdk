@@ -28,6 +28,7 @@
 #include <netinet/ip6.h>
 #endif
 
+#include <rte_ether.h>
 #include <rte_byteorder.h>
 #include <rte_mbuf.h>
 #include <rte_cksum.h>
@@ -208,6 +209,148 @@ rte_ipv6_addr_is_unspec(const struct rte_ipv6_addr *ip)
 
 /** Loopback IPv6 address as defined in RFC 4291, section 2.5.3. */
 #define RTE_IPV6_ADDR_LOOPBACK RTE_IPV6(0, 0, 0, 0, 0, 0, 0, 1)
+
+/**
+ * Check if an IPv6 address is the loopback address as defined in RFC 4291,
+ * section 2.5.3.
+ */
+static inline bool
+rte_ipv6_addr_is_loopback(const struct rte_ipv6_addr *ip)
+{
+	struct rte_ipv6_addr loopback = RTE_IPV6_ADDR_LOOPBACK;
+	return rte_ipv6_addr_eq(ip, &loopback);
+}
+
+/**
+ * Check if an IPv6 address is link-local as defined in RFC 4291, section 2.5.6.
+ */
+static inline bool
+rte_ipv6_addr_is_linklocal(const struct rte_ipv6_addr *ip)
+{
+	return ip->a[0] == 0xfe && (ip->a[1] & 0xc0) == 0x80;
+}
+
+/**
+ * Check if an IPv6 address is site-local as defined in RFC 4291, section 2.5.7.
+ */
+static inline bool
+rte_ipv6_addr_is_sitelocal(const struct rte_ipv6_addr *ip)
+{
+	return ip->a[0] == 0xfe && (ip->a[1] & 0xc0) == 0xc0;
+}
+
+/**
+ * Check if an IPv6 address is an IPv4-compatible address as defined in RFC 4291,
+ * section 2.5.5.1.
+ */
+static inline bool
+rte_ipv6_addr_is_v4compat(const struct rte_ipv6_addr *ip)
+{
+	const struct rte_ipv6_addr unspec = RTE_IPV6_ADDR_UNSPEC;
+	return rte_ipv6_addr_eq_prefix(ip, &unspec, 32) && !rte_ipv6_addr_is_loopback(ip);
+}
+
+#define RTE_IPV6_ADDR_PREFIX_V4MAPPED RTE_IPV6(0, 0, 0, 0, 0, 0xffff, 0, 0)
+
+/**
+ * Check if an IPv6 address is an IPv4-mapped address as defined in RFC 4291,
+ * section 2.5.5.2.
+ */
+static inline bool
+rte_ipv6_addr_is_v4mapped(const struct rte_ipv6_addr *ip)
+{
+	const struct rte_ipv6_addr prefix = RTE_IPV6_ADDR_PREFIX_V4MAPPED;
+	return rte_ipv6_addr_eq_prefix(ip, &prefix, 32);
+}
+
+/**
+ * IPv6 multicast scope values as defined in RFC 4291, section 2.7.
+ */
+typedef enum {
+	RTE_IPV6_MC_SCOPE_RESERVED = 0x00,
+	RTE_IPV6_MC_SCOPE_IFACELOCAL = 0x01,
+	RTE_IPV6_MC_SCOPE_LINKLOCAL = 0x02,
+	RTE_IPV6_MC_SCOPE_SITELOCAL = 0x05,
+	RTE_IPV6_MC_SCOPE_ORGLOCAL = 0x08,
+	RTE_IPV6_MC_SCOPE_GLOBAL = 0x0e,
+} __rte_packed rte_ipv6_mc_scope_t;
+
+/**
+ * Extract the IPv6 multicast scope value as defined in RFC 4291, section 2.7.
+ */
+static inline rte_ipv6_mc_scope_t
+rte_ipv6_mc_scope(const struct rte_ipv6_addr *ip)
+{
+	return (rte_ipv6_mc_scope_t)(ip->a[1] & 0x0f);
+}
+
+/**
+ * Check if an IPv6 address is multicast as defined in RFC 4291, section 2.7.
+ */
+static inline bool
+rte_ipv6_addr_is_mcast(const struct rte_ipv6_addr *ip)
+{
+	return ip->a[0] == 0xff;
+}
+
+/** Well known multicast addresses as defined in RFC 4291, section 2.7.1. */
+#define RTE_IPV6_ADDR_ALLNODES_IFACE_LOCAL RTE_IPV6(0xff01, 0, 0, 0, 0, 0, 0, 1)
+#define RTE_IPV6_ADDR_ALLNODES_LINK_LOCAL RTE_IPV6(0xff02, 0, 0, 0, 0, 0, 0, 1)
+#define RTE_IPV6_ADDR_ALLROUTERS_IFACE_LOCAL RTE_IPV6(0xff01, 0, 0, 0, 0, 0, 0, 2)
+#define RTE_IPV6_ADDR_ALLROUTERS_LINK_LOCAL RTE_IPV6(0xff02, 0, 0, 0, 0, 0, 0, 2)
+#define RTE_IPV6_ADDR_ALLROUTERS_SITE_LOCAL RTE_IPV6(0xff05, 0, 0, 0, 0, 0, 0, 2)
+
+/*
+ * Generate a link-local IPv6 address from an ethernet address as specified in
+ * RFC 2464, section 5.
+ */
+static inline void
+rte_ipv6_llocal_from_ethernet(struct rte_ipv6_addr *ip, const struct rte_ether_addr *mac)
+{
+	ip->a[0] = 0xfe;
+	ip->a[1] = 0x80;
+	memset(&ip->a[2], 0, 6);
+	ip->a[8] = mac->addr_bytes[0];
+	ip->a[9] = mac->addr_bytes[1];
+	ip->a[10] = mac->addr_bytes[2];
+	ip->a[11] = 0xff;
+	ip->a[12] = 0xfe;
+	ip->a[13] = mac->addr_bytes[3];
+	ip->a[14] = mac->addr_bytes[4];
+	ip->a[15] = mac->addr_bytes[5];
+}
+
+/**
+ * Convert a unicast or anycast IPv6 address to a solicited-node multicast
+ * address as defined in RFC 4291, section 2.7.1.
+ */
+static inline void
+rte_ipv6_solnode_from_addr(struct rte_ipv6_addr *sol, const struct rte_ipv6_addr *ip)
+{
+	sol->a[0] = 0xff;
+	sol->a[1] = 0x02;
+	memset(&sol->a[2], 0, 9);
+	sol->a[11] = 0x01;
+	sol->a[12] = 0xff;
+	sol->a[13] = ip->a[13];
+	sol->a[14] = ip->a[14];
+	sol->a[15] = ip->a[15];
+}
+
+/**
+ * Generate a multicast ethernet address from a multicast IPv6 address as defined
+ * in RFC 2464, section 7.
+ */
+static inline void
+rte_ether_mcast_from_ipv6(struct rte_ether_addr *mac, const struct rte_ipv6_addr *ip)
+{
+	mac->addr_bytes[0] = 0x33;
+	mac->addr_bytes[1] = 0x33;
+	mac->addr_bytes[2] = ip->a[12];
+	mac->addr_bytes[3] = ip->a[13];
+	mac->addr_bytes[4] = ip->a[14];
+	mac->addr_bytes[5] = ip->a[15];
+}
 
 /**
  * IPv6 Header
