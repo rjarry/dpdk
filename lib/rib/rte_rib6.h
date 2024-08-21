@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-#define RTE_RIB6_IPV6_ADDR_SIZE	16
+#define RTE_RIB6_IPV6_ADDR_SIZE (RTE_DEPRECATED(RTE_RIB6_IPV6_ADDR_SIZE) RTE_IPV6_ADDR_SIZE)
 
 /**
  * rte_rib6_get_nxt() flags
@@ -65,7 +65,7 @@ rte_rib6_copy_addr(uint8_t *dst, const uint8_t *src)
 {
 	if ((dst == NULL) || (src == NULL))
 		return;
-	rte_memcpy(dst, src, RTE_RIB6_IPV6_ADDR_SIZE);
+	rte_memcpy(dst, src, RTE_IPV6_ADDR_SIZE);
 }
 
 /**
@@ -85,11 +85,11 @@ static inline int rte_rib6_is_equal(const uint8_t *ip1, const uint8_t *ip2)
 
 static inline int
 rte_rib6_is_equal(const uint8_t *ip1, const uint8_t *ip2) {
-	int i;
+	unsigned int i;
 
 	if ((ip1 == NULL) || (ip2 == NULL))
 		return 0;
-	for (i = 0; i < RTE_RIB6_IPV6_ADDR_SIZE; i++) {
+	for (i = 0; i < RTE_IPV6_ADDR_SIZE; i++) {
 		if (ip1[i] != ip2[i])
 			return 0;
 	}

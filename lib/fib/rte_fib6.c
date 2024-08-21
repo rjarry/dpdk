@@ -71,7 +71,7 @@ dummy_modify(struct rte_fib6 *fib, const struct in6_addr *ip,
 	uint8_t depth, uint64_t next_hop, int op)
 {
 	struct rte_rib6_node *node;
-	if ((fib == NULL) || (depth > RTE_FIB6_MAXDEPTH))
+	if ((fib == NULL) || (depth > RTE_IPV6_MAX_DEPTH))
 		return -EINVAL;
 
 	node = rte_rib6_lookup_exact(fib->rib, ip, depth);
@@ -123,7 +123,7 @@ rte_fib6_add(struct rte_fib6 *fib, const struct in6_addr *ip,
 	uint8_t depth, uint64_t next_hop)
 {
 	if ((fib == NULL) || (ip == NULL) || (fib->modify == NULL) ||
-			(depth > RTE_FIB6_MAXDEPTH))
+			(depth > RTE_IPV6_MAX_DEPTH))
 		return -EINVAL;
 	return fib->modify(fib, ip, depth, next_hop, RTE_FIB6_ADD);
 }
@@ -133,7 +133,7 @@ rte_fib6_delete(struct rte_fib6 *fib, const struct in6_addr *ip,
 	uint8_t depth)
 {
 	if ((fib == NULL) || (ip == NULL) || (fib->modify == NULL) ||
-			(depth > RTE_FIB6_MAXDEPTH))
+			(depth > RTE_IPV6_MAX_DEPTH))
 		return -EINVAL;
 	return fib->modify(fib, ip, depth, 0, RTE_FIB6_DEL);
 }
