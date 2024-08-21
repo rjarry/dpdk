@@ -8,6 +8,7 @@
 
 #include <stdalign.h>
 
+#include <rte_common.h>
 #include <rte_fib6.h>
 
 /**
@@ -18,7 +19,7 @@
 /* @internal Total number of tbl24 entries. */
 #define TRIE_TBL24_NUM_ENT	(1 << 24)
 /* Maximum depth value possible for IPv6 LPM. */
-#define TRIE_MAX_DEPTH		128
+#define TRIE_MAX_DEPTH (RTE_DEPRECATED(TRIE_MAX_DEPTH) RTE_IPV6_MAX_DEPTH)
 /* @internal Number of entries in a tbl8 group. */
 #define TRIE_TBL8_GRP_NUM_ENT	256ULL
 /* @internal Total number of tbl8 groups in the tbl8. */

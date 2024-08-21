@@ -267,7 +267,7 @@ rte_node_ip6_route_add(const uint8_t *ip, uint8_t depth, uint16_t next_hop,
 	uint32_t val;
 	int ret;
 
-	memcpy(in6.s6_addr, ip, RTE_LPM6_IPV6_ADDR_SIZE);
+	memcpy(in6.s6_addr, ip, RTE_IPV6_ADDR_SIZE);
 	inet_ntop(AF_INET6, &in6, abuf, sizeof(abuf));
 	/* Embedded next node id into 24 bit next hop */
 	val = ((next_node << 16) | next_hop) & ((1ull << 24) - 1);

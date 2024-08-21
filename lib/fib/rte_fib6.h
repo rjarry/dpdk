@@ -17,15 +17,16 @@
 
 #include <stdint.h>
 
+#include <rte_common.h>
 #include <rte_ip6.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define RTE_FIB6_IPV6_ADDR_SIZE		16
+#define RTE_FIB6_IPV6_ADDR_SIZE (RTE_DEPRECATED(RTE_FIB6_IPV6_ADDR_SIZE) RTE_IPV6_ADDR_SIZE)
 /** Maximum depth value possible for IPv6 FIB. */
-#define RTE_FIB6_MAXDEPTH       128
+#define RTE_FIB6_MAXDEPTH (RTE_DEPRECATED(RTE_FIB6_MAXDEPTH) RTE_IPV6_MAX_DEPTH)
 
 struct rte_fib6;
 struct rte_rib6;

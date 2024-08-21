@@ -802,7 +802,7 @@ simulate_add(struct rte_lpm6 *lpm, const struct rte_ipv6_addr *masked_ip, uint8_
 	 * Inspect one by one the rest of the bytes until
 	 * the process is completed.
 	 */
-	for (i = ADD_FIRST_BYTE; i < RTE_LPM6_IPV6_ADDR_SIZE && ret == 1; i++) {
+	for (i = ADD_FIRST_BYTE; i < RTE_IPV6_ADDR_SIZE && ret == 1; i++) {
 		tbl = tbl_next;
 		ret = simulate_add_step(lpm, tbl, &tbl_next, masked_ip, 1,
 			(uint8_t)(i + 1), depth, &need_tbl_nb);
@@ -832,7 +832,7 @@ rte_lpm6_add(struct rte_lpm6 *lpm, const struct rte_ipv6_addr *ip, uint8_t depth
 	int i;
 
 	/* Check user arguments. */
-	if ((lpm == NULL) || (depth < 1) || (depth > RTE_LPM6_MAX_DEPTH))
+	if ((lpm == NULL) || (depth < 1) || (depth > RTE_IPV6_MAX_DEPTH))
 		return -EINVAL;
 
 	/* Copy the IP and mask it to avoid modifying user's input data. */
@@ -861,7 +861,7 @@ rte_lpm6_add(struct rte_lpm6 *lpm, const struct rte_ipv6_addr *ip, uint8_t depth
 	 * Inspect one by one the rest of the bytes until
 	 * the process is completed.
 	 */
-	for (i = ADD_FIRST_BYTE; i < RTE_LPM6_IPV6_ADDR_SIZE && status == 1; i++) {
+	for (i = ADD_FIRST_BYTE; i < RTE_IPV6_ADDR_SIZE && status == 1; i++) {
 		tbl = tbl_next;
 		status = add_step(lpm, tbl, tbl_next_num, &tbl_next,
 			&tbl_next_num, &masked_ip, 1, (uint8_t)(i + 1),
@@ -993,7 +993,7 @@ rte_lpm6_is_rule_present(struct rte_lpm6 *lpm, const struct rte_ipv6_addr *ip, u
 
 	/* Check user arguments. */
 	if ((lpm == NULL) || next_hop == NULL || ip == NULL ||
-			(depth < 1) || (depth > RTE_LPM6_MAX_DEPTH))
+			(depth < 1) || (depth > RTE_IPV6_MAX_DEPTH))
 		return -EINVAL;
 
 	/* Copy the IP and mask it to avoid modifying user's input data. */
@@ -1268,7 +1268,7 @@ rte_lpm6_delete(struct rte_lpm6 *lpm, const struct rte_ipv6_addr *ip, uint8_t de
 	struct rte_lpm6_tbl_entry *from, *to;
 
 	/* Check input arguments. */
-	if ((lpm == NULL) || (depth < 1) || (depth > RTE_LPM6_MAX_DEPTH))
+	if ((lpm == NULL) || (depth < 1) || (depth > RTE_IPV6_MAX_DEPTH))
 		return -EINVAL;
 
 	/* Copy the IP and mask it to avoid modifying user's input data. */
