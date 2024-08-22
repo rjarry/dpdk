@@ -1,1 +1,4 @@
-v2: added more multicast helpers
+v2:
+
+- added more multicast helpers
+- fixed all routers well known multicast addresses
