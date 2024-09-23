@@ -1,0 +1,43 @@
+From: Robin Jarry <rjarry@redhat.com>
+To: <david.marchand@redhat.com>,
+	<chenbox@nvidia.com>,
+	Maxime Coquelin <maxime.coquelin@redhat.com>,
+	<dev@dpdk.org>
+Cc: Chenbo Xia <chenbox@nvidia.com>,
+	David Marchand <david.marchand@redhat.com>
+Message-Id: <172712926963.16819.2718642040152397966@ringo.local>
+In-Reply-To: <20240920150921.994434-1-maxime.coquelin@redhat.com>
+References: <20240920150921.994434-1-maxime.coquelin@redhat.com>
+Date: Mon, 23 Sep 2024 18:07:50 -0400
+Subject: Applied: [PATCH v2 0/2] vhost: add VDUSE reconnection support
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+X-Mailer: git-apply-series
+X-Sourcehut-Patchset-Update: APPLIED
+
+Maxime Coquelin <maxime.coquelin@redhat.com> wrote:
+> This series adds support for VDUSE reconnection.
+>
+> First patch introduces the reconnection file layout and
+> track the virtqueues available index updates in the
+> datapath and control queue.
+>
+> Second patch adds VDUSE reconnect intialization and some
+> sanity checks to prevent incompatible reconnections.
+>
+> Changes in v2:
+> ==============
+> - Added more sanity checks at reconnection
+> - Improve versionning
+> - Fix error loggin (Chenbo)
+> - Clarify why offloading device start is required (Chenbo)
+> - Change runtime path to <RUNPATH>/vduse instead of <RUNPATH>/dpdk/vduse
+>
+> Maxime Coquelin (2):
+>   vhost: add logging mechanism for reconnection
+>   vhost: add reconnection support to VDUSE
+
+Acked-by: Robin Jarry <rjarry@redhat.com>
+
+Applied, thanks.
