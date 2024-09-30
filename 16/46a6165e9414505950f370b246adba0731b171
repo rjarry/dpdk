@@ -1,3 +1,8 @@
+v7:
+
+* rebased on bf0ff8df59c7 ("maintainers: fix prog guide paths")
+* no change, only to re-trigger ci
+
 v6:
 
 * Fix ABI breakage on arm64 (and all platforms that have RTE_CACHE_LINE_SIZE=128).
@@ -18,18 +23,3 @@ v5:
   bytes. There will be a 64 bytes hole in the structure at the end of
   the unnamed struct before the zero length next nodes array. Use
   __rte_cache_min_aligned to preserve existing alignment.
-
-v4:
-
-* Replaced the unnamed union with helper inline functions.
-
-v3:
-
-* Added __extension__ to the unnamed struct inside the union.
-* Fixed C++ header checks.
-* Replaced alignas() with an explicit static_assert.
-
-v2:
-
-* Refuse to run if no endpoints are enabled.
-* Handle endpoint errors gracefully without failing the whole query.
