@@ -111,6 +111,8 @@ API Changes
   ``uint8_t[16]`` fields.
 * gro: ``tcp6_flow_key`` was modified to use ``rte_ipv6_addr`` structures instead of ``uint8_t[16]``
   fields.
+* ethdev: ``rte_flow_*`` structures were modified to use  ``rte_ipv6_addr`` structures instead of
+  ``uint8_t[16]`` fields.
 
 ABI Changes
 -----------
