@@ -144,7 +144,7 @@ route6_pkts_neon(struct rt_ctx *rt_ctx, struct rte_mbuf **pkts, int nb_rx)
 			 * required to get the hop
 			 */
 			ipv6_hdr = (struct rte_ipv6_hdr *)(eth_hdr + 1);
-			memcpy(&dst_ip6[lpm_pkts], &ipv6_hdr->dst_addr, 16);
+			rte_ipv6_addr_cpy(&dst_ip6[lpm_pkts], &ipv6_hdr->dst_addr);
 			lpm_pkts++;
 		}
 	}
