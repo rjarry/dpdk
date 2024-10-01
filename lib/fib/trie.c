@@ -350,9 +350,9 @@ write_edge(struct rte_trie_tbl *dp, const uint8_t *ip_part, uint64_t next_hop,
 	return ret;
 }
 
-#define IPV6_MAX_IDX	(RTE_FIB6_IPV6_ADDR_SIZE - 1)
+#define IPV6_MAX_IDX	(RTE_IPV6_ADDR_SIZE - 1)
 #define TBL24_BYTES	3
-#define TBL8_LEN	(RTE_FIB6_IPV6_ADDR_SIZE - TBL24_BYTES)
+#define TBL8_LEN	(RTE_IPV6_ADDR_SIZE - TBL24_BYTES)
 
 static int
 install_to_dp(struct rte_trie_tbl *dp, const struct rte_ipv6_addr *ledge,
@@ -518,7 +518,7 @@ trie_modify(struct rte_fib6 *fib, const struct rte_ipv6_addr *ip,
 	uint64_t par_nh, node_nh;
 	uint8_t tmp_depth, depth_diff = 0, parent_depth = 24;
 
-	if ((fib == NULL) || (ip == NULL) || (depth > RTE_FIB6_MAXDEPTH))
+	if ((fib == NULL) || (ip == NULL) || (depth > RTE_IPV6_MAX_DEPTH))
 		return -EINVAL;
 
 	dp = rte_fib6_get_dp(fib);

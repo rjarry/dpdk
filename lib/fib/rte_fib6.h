@@ -23,10 +23,6 @@
 extern "C" {
 #endif
 
-#define RTE_FIB6_IPV6_ADDR_SIZE		16
-/** Maximum depth value possible for IPv6 FIB. */
-#define RTE_FIB6_MAXDEPTH       128
-
 struct rte_fib6;
 struct rte_rib6;
 
