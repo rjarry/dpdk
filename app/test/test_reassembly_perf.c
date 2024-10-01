@@ -340,17 +340,17 @@ ipv6_frag_fill_data(struct rte_mbuf **mbuf, uint8_t nb_frags, uint32_t flow_id,
 			rte_cpu_to_be_16(pkt_len - sizeof(struct rte_ipv6_hdr));
 		ip_hdr->proto = IPPROTO_FRAGMENT;
 		ip_hdr->hop_limits = IP_DEFTTL;
-		memcpy(ip_hdr->src_addr, ip6_addr, sizeof(ip_hdr->src_addr));
-		memcpy(ip_hdr->dst_addr, ip6_addr, sizeof(ip_hdr->dst_addr));
-		ip_hdr->src_addr[7] = (flow_id >> 16) & 0xf;
-		ip_hdr->src_addr[7] |= 0x10;
-		ip_hdr->src_addr[8] = (flow_id >> 8) & 0xff;
-		ip_hdr->src_addr[9] = flow_id & 0xff;
+		memcpy(&ip_hdr->src_addr, ip6_addr, sizeof(ip_hdr->src_addr));
+		memcpy(&ip_hdr->dst_addr, ip6_addr, sizeof(ip_hdr->dst_addr));
+		ip_hdr->src_addr.a[7] = (flow_id >> 16) & 0xf;
+		ip_hdr->src_addr.a[7] |= 0x10;
+		ip_hdr->src_addr.a[8] = (flow_id >> 8) & 0xff;
+		ip_hdr->src_addr.a[9] = flow_id & 0xff;
 
-		ip_hdr->dst_addr[7] = (flow_id >> 16) & 0xf;
-		ip_hdr->dst_addr[7] |= 0x20;
-		ip_hdr->dst_addr[8] = (flow_id >> 8) & 0xff;
-		ip_hdr->dst_addr[9] = flow_id & 0xff;
+		ip_hdr->dst_addr.a[7] = (flow_id >> 16) & 0xf;
+		ip_hdr->dst_addr.a[7] |= 0x20;
+		ip_hdr->dst_addr.a[8] = (flow_id >> 8) & 0xff;
+		ip_hdr->dst_addr.a[9] = flow_id & 0xff;
 
 		frag_hdr->next_header = IPPROTO_UDP;
 		frag_hdr->reserved = 0;

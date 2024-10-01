@@ -85,7 +85,7 @@ ipv6_hdr_print(struct rte_ipv6_hdr *hdr)
 {
 	uint8_t *addr;
 
-	addr = hdr->src_addr;
+	addr = hdr->src_addr.a;
 	printf("src: %4hx:%4hx:%4hx:%4hx:%4hx:%4hx:%4hx:%4hx \t",
 	       (uint16_t)((addr[0] << 8) | addr[1]),
 	       (uint16_t)((addr[2] << 8) | addr[3]),
@@ -96,7 +96,7 @@ ipv6_hdr_print(struct rte_ipv6_hdr *hdr)
 	       (uint16_t)((addr[12] << 8) | addr[13]),
 	       (uint16_t)((addr[14] << 8) | addr[15]));
 
-	addr = hdr->dst_addr;
+	addr = hdr->dst_addr.a;
 	printf("dst: %4hx:%4hx:%4hx:%4hx:%4hx:%4hx:%4hx:%4hx",
 	       (uint16_t)((addr[0] << 8) | addr[1]),
 	       (uint16_t)((addr[2] << 8) | addr[3]),
@@ -196,8 +196,8 @@ parse_flow_tokens(char **tokens, uint32_t n_tokens,
 				INCREMENT_TOKEN_INDEX(ti, n_tokens, status);
 				if (status->status < 0)
 					return;
-				if (ipv6_addr_cpy(rule->ipv6.spec.hdr.src_addr,
-						  rule->ipv6.mask.hdr.src_addr,
+				if (ipv6_addr_cpy(rule->ipv6.spec.hdr.src_addr.a,
+						  rule->ipv6.mask.hdr.src_addr.a,
 						  tokens[ti], status))
 					return;
 			}
@@ -205,8 +205,8 @@ parse_flow_tokens(char **tokens, uint32_t n_tokens,
 				INCREMENT_TOKEN_INDEX(ti, n_tokens, status);
 				if (status->status < 0)
 					return;
-				if (ipv6_addr_cpy(rule->ipv6.spec.hdr.dst_addr,
-						  rule->ipv6.mask.hdr.dst_addr,
+				if (ipv6_addr_cpy(rule->ipv6.spec.hdr.dst_addr.a,
+						  rule->ipv6.mask.hdr.dst_addr.a,
 						  tokens[ti], status))
 					return;
 			}

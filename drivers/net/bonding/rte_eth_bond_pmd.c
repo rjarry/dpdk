@@ -690,9 +690,9 @@ static inline uint32_t
 ipv6_hash(struct rte_ipv6_hdr *ipv6_hdr)
 {
 	unaligned_uint32_t *word_src_addr =
-		(unaligned_uint32_t *)&(ipv6_hdr->src_addr[0]);
+		(unaligned_uint32_t *)&ipv6_hdr->src_addr;
 	unaligned_uint32_t *word_dst_addr =
-		(unaligned_uint32_t *)&(ipv6_hdr->dst_addr[0]);
+		(unaligned_uint32_t *)&ipv6_hdr->dst_addr;
 
 	return (word_src_addr[0] ^ word_dst_addr[0]) ^
 			(word_src_addr[1] ^ word_dst_addr[1]) ^
