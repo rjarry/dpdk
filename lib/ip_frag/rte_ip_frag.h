@@ -23,6 +23,7 @@ extern "C" {
 #include <rte_malloc.h>
 #include <rte_memory.h>
 #include <rte_ip.h>
+#include <rte_ip6.h>
 #include <rte_byteorder.h>
 
 struct rte_mbuf;

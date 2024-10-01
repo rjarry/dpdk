@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 #include <rte_ip.h>
+#include <rte_ip6.h>
 #include <rte_udp.h>
 #include <rte_tcp.h>
 
