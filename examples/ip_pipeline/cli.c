@@ -3540,8 +3540,8 @@ parse_table_action_encap(char **tokens,
 				parser_read_uint8(&hop_limit, tokens[5]))
 				return 0;
 
-			memcpy(a->encap.vxlan.ipv6.sa, sa.s6_addr, 16);
-			memcpy(a->encap.vxlan.ipv6.da, da.s6_addr, 16);
+			memcpy(&a->encap.vxlan.ipv6.sa, sa.s6_addr, 16);
+			memcpy(&a->encap.vxlan.ipv6.da, da.s6_addr, 16);
 			a->encap.vxlan.ipv6.flow_label = flow_label;
 			a->encap.vxlan.ipv6.dscp = dscp;
 			a->encap.vxlan.ipv6.hop_limit = hop_limit;
@@ -3615,7 +3615,7 @@ parse_table_action_nat(char **tokens,
 			return 0;
 
 		a->nat.ip_version = 0;
-		memcpy(a->nat.addr.ipv6, addr.s6_addr, 16);
+		memcpy(&a->nat.addr.ipv6, addr.s6_addr, 16);
 		a->nat.port = port;
 		a->action_mask |= 1 << RTE_TABLE_ACTION_NAT;
 		return 4;
@@ -4956,9 +4956,9 @@ table_rule_show(const char *pipeline_name,
 						(uint32_t)a->encap.vxlan.ipv4.ttl);
 				} else {
 					fprintf(f, " ipv6 ");
-					ipv6_addr_show(f, a->encap.vxlan.ipv6.sa);
+					ipv6_addr_show(f, a->encap.vxlan.ipv6.sa.a);
 					fprintf(f, " ");
-					ipv6_addr_show(f, a->encap.vxlan.ipv6.da);
+					ipv6_addr_show(f, a->encap.vxlan.ipv6.da.a);
 					fprintf(f, " %u %u %u ",
 						a->encap.vxlan.ipv6.flow_label,
 						(uint32_t)a->encap.vxlan.ipv6.dscp,
@@ -4980,7 +4980,7 @@ table_rule_show(const char *pipeline_name,
 			if (a->nat.ip_version)
 				ipv4_addr_show(f, a->nat.addr.ipv4);
 			else
-				ipv6_addr_show(f, a->nat.addr.ipv6);
+				ipv6_addr_show(f, a->nat.addr.ipv6.a);
 			fprintf(f, " %u ", (uint32_t)(a->nat.port));
 		}
 
