@@ -12,6 +12,21 @@ static const struct rte_ipv6_addr bcast_addr = {
 static const struct rte_ipv6_addr zero_addr = { 0 };
 
 static int
+test_ipv6_check_version(void)
+{
+	struct rte_ipv6_hdr h;
+
+	h.vtc_flow = 0;
+	TEST_ASSERT_EQUAL(rte_ipv6_check_version(&h), -EINVAL, "");
+	h.vtc_flow = RTE_BE32(0x7f00ba44);
+	TEST_ASSERT_EQUAL(rte_ipv6_check_version(&h), -EINVAL, "");
+	h.vtc_flow = RTE_BE32(0x6badcaca);
+	TEST_ASSERT_EQUAL(rte_ipv6_check_version(&h), 0, "");
+
+	return 0;
+}
+
+static int
 test_ipv6_addr_mask(void)
 {
 	const struct rte_ipv6_addr masked_3 = {
@@ -191,6 +206,7 @@ test_ether_mcast_from_ipv6(void)
 static int
 test_net_ipv6(void)
 {
+	TEST_ASSERT_SUCCESS(test_ipv6_check_version(), "");
 	TEST_ASSERT_SUCCESS(test_ipv6_addr_mask(), "");
 	TEST_ASSERT_SUCCESS(test_ipv6_addr_eq_prefix(), "");
 	TEST_ASSERT_SUCCESS(test_ipv6_addr_kind(), "");

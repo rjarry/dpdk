@@ -323,6 +323,23 @@ struct rte_ipv6_hdr {
 	struct rte_ipv6_addr dst_addr;	/**< IP address of destination host(s). */
 } __rte_packed;
 
+#define RTE_IPV6_VTC_FLOW_VERSION RTE_BE32(0x60000000)
+#define RTE_IPV6_VTC_FLOW_VERSION_MASK RTE_BE32(0xf0000000)
+
+/**
+ * Check that the IPv6 header version field is valid according to RFC 8200 section 3.
+ *
+ * @return
+ *   0 if the version field is valid. -EINVAL otherwise.
+ */
+static inline int rte_ipv6_check_version(const struct rte_ipv6_hdr *ip)
+{
+	rte_be32_t v = ip->vtc_flow & RTE_IPV6_VTC_FLOW_VERSION_MASK;
+	if (v != RTE_IPV6_VTC_FLOW_VERSION)
+		return -EINVAL;
+	return 0;
+}
+
 /* IPv6 routing extension type definition. */
 #define RTE_IPV6_SRCRT_TYPE_4 4
 
