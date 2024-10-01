@@ -109,6 +109,8 @@ API Changes
   ``uint8_t[16]`` fields.
 * hash: ``rte_ipv6_tuple`` was modified to use ``rte_ipv6_addr`` structures instead of
   ``uint8_t[16]`` fields.
+* gro: ``tcp6_flow_key`` was modified to use ``rte_ipv6_addr`` structures instead of ``uint8_t[16]``
+  fields.
 
 ABI Changes
 -----------
