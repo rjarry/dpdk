@@ -212,7 +212,7 @@ test_add_invalid(void)
 {
 	int status;
 	struct rte_ipsec_sadv4_key tuple_v4 = {10, 20, 30};
-	struct rte_ipsec_sadv6_key tuple_v6 = {10, {20, }, {30, } };
+	struct rte_ipsec_sadv6_key tuple_v6 = {10, {.a = {20, }}, {.a = {30, }} };
 
 	status = __test_add_invalid(0, (union rte_ipsec_sad_key *)&tuple_v4);
 	if (status != TEST_SUCCESS)
@@ -271,8 +271,8 @@ test_delete_invalid(void)
 {
 	int status;
 	struct rte_ipsec_sadv4_key tuple_v4 = {SPI, DIP, SIP};
-	struct rte_ipsec_sadv6_key tuple_v6 = {SPI, {0xbe, 0xef, },
-			{0xf0, 0x0d, } };
+	struct rte_ipsec_sadv6_key tuple_v6 = {
+		SPI, {.a = {0xbe, 0xef, }}, {.a = {0xf0, 0x0d, }} };
 
 	status = __test_delete_invalid(0, (union rte_ipsec_sad_key *)&tuple_v4);
 	if (status != TEST_SUCCESS)
@@ -329,7 +329,7 @@ test_lookup_invalid(void)
 {
 	int status;
 	struct rte_ipsec_sadv4_key tuple_v4 = {10, 20, 30};
-	struct rte_ipsec_sadv6_key tuple_v6 = {10, {20, }, {30, } };
+	struct rte_ipsec_sadv6_key tuple_v6 = {10, {.a = {20, }}, {.a = {30, }} };
 
 	status = __test_lookup_invalid(0,
 			(union rte_ipsec_sad_key *)&tuple_v4);
@@ -405,10 +405,10 @@ test_lookup_basic(void)
 	int status;
 	struct rte_ipsec_sadv4_key tuple_v4 = {SPI, DIP, SIP};
 	struct rte_ipsec_sadv4_key tuple_v4_1 = {SPI, BAD, BAD};
-	struct rte_ipsec_sadv6_key tuple_v6 = {SPI, {0xbe, 0xef, },
-			{0xf0, 0x0d, } };
-	struct rte_ipsec_sadv6_key tuple_v6_1 = {SPI, {0x0b, 0xad, },
-			{0x0b, 0xad, } };
+	struct rte_ipsec_sadv6_key tuple_v6 = {
+		SPI, {.a = {0xbe, 0xef, }}, {.a = {0xf0, 0x0d, }} };
+	struct rte_ipsec_sadv6_key tuple_v6_1 = {
+		SPI, {.a = {0x0b, 0xad, }}, {.a = {0x0b, 0xad, }} };
 
 	status = __test_lookup_basic(0, (union rte_ipsec_sad_key *)&tuple_v4,
 			(union rte_ipsec_sad_key *)&tuple_v4_1);
@@ -654,14 +654,14 @@ test_lookup_adv(void)
 	struct rte_ipsec_sadv4_key tuple_v4_3 = {BAD, DIP, SIP};
 
 	/* key to install*/
-	struct rte_ipsec_sadv6_key tuple_v6 = {SPI, {0xbe, 0xef, },
-			{0xf0, 0x0d, } };
-	struct rte_ipsec_sadv6_key tuple_v6_1 = {SPI, {0xbe, 0xef, },
-			{0x0b, 0xad, } };
-	struct rte_ipsec_sadv6_key tuple_v6_2 = {SPI, {0x0b, 0xad, },
-			{0xf0, 0x0d, } };
-	struct rte_ipsec_sadv6_key tuple_v6_3 = {BAD, {0xbe, 0xef, },
-			{0xf0, 0x0d, } };
+	struct rte_ipsec_sadv6_key tuple_v6 = {
+		SPI, {.a = {0xbe, 0xef, }}, {.a = {0xf0, 0x0d, }} };
+	struct rte_ipsec_sadv6_key tuple_v6_1 = {
+		SPI, {.a = {0xbe, 0xef, }}, {.a = {0x0b, 0xad, }} };
+	struct rte_ipsec_sadv6_key tuple_v6_2 = {
+		SPI, {.a = {0x0b, 0xad, }}, {.a = {0xf0, 0x0d, }} };
+	struct rte_ipsec_sadv6_key tuple_v6_3 = {
+		BAD, {.a = {0xbe, 0xef, }}, {.a = {0xf0, 0x0d, }} };
 
 	const union rte_ipsec_sad_key *key_arr[] = {
 				(union rte_ipsec_sad_key *)&tuple_v4,
@@ -852,12 +852,12 @@ test_lookup_order(void)
 	struct rte_ipsec_sadv4_key tuple_v4_1 = {SPI, DIP, BAD};
 	struct rte_ipsec_sadv4_key tuple_v4_2 = {SPI, BAD, SIP};
 	/* key to install*/
-	struct rte_ipsec_sadv6_key tuple_v6 = {SPI, {0xbe, 0xef, },
-			{0xf0, 0x0d, } };
-	struct rte_ipsec_sadv6_key tuple_v6_1 = {SPI, {0xbe, 0xef, },
-			{0x0b, 0xad, } };
-	struct rte_ipsec_sadv6_key tuple_v6_2 = {SPI, {0x0b, 0xad, },
-			{0xf0, 0x0d, } };
+	struct rte_ipsec_sadv6_key tuple_v6 = {
+		SPI, {.a = {0xbe, 0xef, }}, {.a = {0xf0, 0x0d, }} };
+	struct rte_ipsec_sadv6_key tuple_v6_1 = {
+		SPI, {.a = {0xbe, 0xef, }}, {.a = {0x0b, 0xad, }} };
+	struct rte_ipsec_sadv6_key tuple_v6_2 = {
+		SPI, {.a = {0x0b, 0xad, }}, {.a = {0xf0, 0x0d, }} };
 
 	status = __test_lookup_order(0, (union rte_ipsec_sad_key *)&tuple_v4,
 			(union rte_ipsec_sad_key *)&tuple_v4_1,
