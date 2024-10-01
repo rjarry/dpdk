@@ -101,6 +101,8 @@ API Changes
   ``uint8_t[16]`` fields.
 * rib6,fib6,lpm6: All public API functions were modified to use ``struct rte_ipv6_addr`` instead of
   ``uint8_t[16]`` parameters.
+* node: ``rte_node_ip6_route_add()`` was modified to use a ``struct rte_ipv6_addr`` instead of
+  ``uint8_t[16]`` parameter.
 
 ABI Changes
 -----------
