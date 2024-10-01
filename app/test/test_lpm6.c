@@ -93,27 +93,28 @@ rte_lpm6_test tests6[] = {
 #define PASS 0
 
 static void
-IPv6(uint8_t *ip, uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint8_t b5,
-		uint8_t b6, uint8_t b7, uint8_t b8, uint8_t b9, uint8_t b10,
-		uint8_t b11, uint8_t b12, uint8_t b13, uint8_t b14, uint8_t b15,
-		uint8_t b16)
+IPv6(struct rte_ipv6_addr *ip,
+	uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4,
+	uint8_t b5, uint8_t b6, uint8_t b7, uint8_t b8,
+	uint8_t b9, uint8_t b10, uint8_t b11, uint8_t b12,
+	uint8_t b13, uint8_t b14, uint8_t b15, uint8_t b16)
 {
-	ip[0] = b1;
-	ip[1] = b2;
-	ip[2] = b3;
-	ip[3] = b4;
-	ip[4] = b5;
-	ip[5] = b6;
-	ip[6] = b7;
-	ip[7] = b8;
-	ip[8] = b9;
-	ip[9] = b10;
-	ip[10] = b11;
-	ip[11] = b12;
-	ip[12] = b13;
-	ip[13] = b14;
-	ip[14] = b15;
-	ip[15] = b16;
+	ip->a[0] = b1;
+	ip->a[1] = b2;
+	ip->a[2] = b3;
+	ip->a[3] = b4;
+	ip->a[4] = b5;
+	ip->a[5] = b6;
+	ip->a[6] = b7;
+	ip->a[7] = b8;
+	ip->a[8] = b9;
+	ip->a[9] = b10;
+	ip->a[10] = b11;
+	ip->a[11] = b12;
+	ip->a[12] = b13;
+	ip->a[13] = b14;
+	ip->a[14] = b15;
+	ip->a[15] = b16;
 }
 
 /*
@@ -250,7 +251,7 @@ test4(void)
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
 
-	uint8_t ip[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {0};
 	uint8_t depth = 24, next_hop = 100;
 	int32_t status = 0;
 
@@ -259,7 +260,7 @@ test4(void)
 	config.flags = 0;
 
 	/* rte_lpm6_add: lpm == NULL */
-	status = rte_lpm6_add(NULL, ip, depth, next_hop);
+	status = rte_lpm6_add(NULL, &ip, depth, next_hop);
 	TEST_LPM_ASSERT(status < 0);
 
 	/*Create valid lpm to use in rest of test. */
@@ -267,11 +268,11 @@ test4(void)
 	TEST_LPM_ASSERT(lpm != NULL);
 
 	/* rte_lpm6_add: depth < 1 */
-	status = rte_lpm6_add(lpm, ip, 0, next_hop);
+	status = rte_lpm6_add(lpm, &ip, 0, next_hop);
 	TEST_LPM_ASSERT(status < 0);
 
 	/* rte_lpm6_add: depth > MAX_DEPTH */
-	status = rte_lpm6_add(lpm, ip, (MAX_DEPTH + 1), next_hop);
+	status = rte_lpm6_add(lpm, &ip, (MAX_DEPTH + 1), next_hop);
 	TEST_LPM_ASSERT(status < 0);
 
 	rte_lpm6_free(lpm);
@@ -288,7 +289,7 @@ test5(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {0};
 	uint8_t depth = 24;
 	int32_t status = 0;
 
@@ -297,7 +298,7 @@ test5(void)
 	config.flags = 0;
 
 	/* rte_lpm_delete: lpm == NULL */
-	status = rte_lpm6_delete(NULL, ip, depth);
+	status = rte_lpm6_delete(NULL, &ip, depth);
 	TEST_LPM_ASSERT(status < 0);
 
 	/*Create valid lpm to use in rest of test. */
@@ -305,11 +306,11 @@ test5(void)
 	TEST_LPM_ASSERT(lpm != NULL);
 
 	/* rte_lpm_delete: depth < 1 */
-	status = rte_lpm6_delete(lpm, ip, 0);
+	status = rte_lpm6_delete(lpm, &ip, 0);
 	TEST_LPM_ASSERT(status < 0);
 
 	/* rte_lpm_delete: depth > MAX_DEPTH */
-	status = rte_lpm6_delete(lpm, ip, (MAX_DEPTH + 1));
+	status = rte_lpm6_delete(lpm, &ip, (MAX_DEPTH + 1));
 	TEST_LPM_ASSERT(status < 0);
 
 	rte_lpm6_free(lpm);
@@ -326,7 +327,7 @@ test6(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {0};
 	uint32_t next_hop_return = 0;
 	int32_t status = 0;
 
@@ -335,7 +336,7 @@ test6(void)
 	config.flags = 0;
 
 	/* rte_lpm6_lookup: lpm == NULL */
-	status = rte_lpm6_lookup(NULL, ip, &next_hop_return);
+	status = rte_lpm6_lookup(NULL, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status < 0);
 
 	/*Create valid lpm to use in rest of test. */
@@ -347,7 +348,7 @@ test6(void)
 	TEST_LPM_ASSERT(status < 0);
 
 	/* rte_lpm6_lookup: next_hop = NULL */
-	status = rte_lpm6_lookup(lpm, ip, NULL);
+	status = rte_lpm6_lookup(lpm, &ip, NULL);
 	TEST_LPM_ASSERT(status < 0);
 
 	rte_lpm6_free(lpm);
@@ -364,7 +365,7 @@ test7(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[10][16];
+	struct rte_ipv6_addr ips[10];
 	int32_t next_hop_return[10];
 	int32_t status = 0;
 
@@ -373,7 +374,7 @@ test7(void)
 	config.flags = 0;
 
 	/* rte_lpm6_lookup: lpm == NULL */
-	status = rte_lpm6_lookup_bulk_func(NULL, ip, next_hop_return, 10);
+	status = rte_lpm6_lookup_bulk_func(NULL, ips, next_hop_return, RTE_DIM(ips));
 	TEST_LPM_ASSERT(status < 0);
 
 	/*Create valid lpm to use in rest of test. */
@@ -381,11 +382,11 @@ test7(void)
 	TEST_LPM_ASSERT(lpm != NULL);
 
 	/* rte_lpm6_lookup: ip = NULL */
-	status = rte_lpm6_lookup_bulk_func(lpm, NULL, next_hop_return, 10);
+	status = rte_lpm6_lookup_bulk_func(lpm, NULL, next_hop_return, RTE_DIM(ips));
 	TEST_LPM_ASSERT(status < 0);
 
 	/* rte_lpm6_lookup: next_hop = NULL */
-	status = rte_lpm6_lookup_bulk_func(lpm, ip, NULL, 10);
+	status = rte_lpm6_lookup_bulk_func(lpm, ips, NULL, RTE_DIM(ips));
 	TEST_LPM_ASSERT(status < 0);
 
 	rte_lpm6_free(lpm);
@@ -402,7 +403,7 @@ test8(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[10][16];
+	struct rte_ipv6_addr ips[10];
 	uint8_t depth[10];
 	int32_t status = 0;
 
@@ -411,7 +412,7 @@ test8(void)
 	config.flags = 0;
 
 	/* rte_lpm6_delete: lpm == NULL */
-	status = rte_lpm6_delete_bulk_func(NULL, ip, depth, 10);
+	status = rte_lpm6_delete_bulk_func(NULL, ips, depth, RTE_DIM(ips));
 	TEST_LPM_ASSERT(status < 0);
 
 	/*Create valid lpm to use in rest of test. */
@@ -419,11 +420,11 @@ test8(void)
 	TEST_LPM_ASSERT(lpm != NULL);
 
 	/* rte_lpm6_delete: ip = NULL */
-	status = rte_lpm6_delete_bulk_func(lpm, NULL, depth, 10);
+	status = rte_lpm6_delete_bulk_func(lpm, NULL, depth, RTE_DIM(ips));
 	TEST_LPM_ASSERT(status < 0);
 
 	/* rte_lpm6_delete: next_hop = NULL */
-	status = rte_lpm6_delete_bulk_func(lpm, ip, NULL, 10);
+	status = rte_lpm6_delete_bulk_func(lpm, ips, NULL, RTE_DIM(ips));
 	TEST_LPM_ASSERT(status < 0);
 
 	rte_lpm6_free(lpm);
@@ -441,7 +442,7 @@ test9(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {0};
 	uint8_t depth = 16;
 	uint32_t next_hop_add = 100, next_hop_return = 0;
 	int32_t status = 0;
@@ -454,21 +455,21 @@ test9(void)
 	lpm = rte_lpm6_create(__func__, SOCKET_ID_ANY, &config);
 	TEST_LPM_ASSERT(lpm != NULL);
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
 	for (i = 0; i < UINT8_MAX; i++) {
-		ip[2] = i;
-		status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+		ip.a[2] = i;
+		status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 		TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 	}
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
 	for (i = 0; i < UINT8_MAX; i++) {
-		ip[2] = i;
-		status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+		ip.a[2] = i;
+		status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 		TEST_LPM_ASSERT(status == -ENOENT);
 	}
 
@@ -486,7 +487,7 @@ test10(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {0};
 	uint8_t depth;
 	uint32_t next_hop_add = 100;
 	int32_t status = 0;
@@ -501,20 +502,20 @@ test10(void)
 
 	for (i = 1; i < 128; i++) {
 		depth = (uint8_t)i;
-		status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+		status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 		TEST_LPM_ASSERT(status == 0);
 	}
 
 	depth = 128;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == -ENOSPC);
 
 	depth = 127;
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
 	depth = 128;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
 	rte_lpm6_free(lpm);
@@ -531,7 +532,7 @@ test11(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {0};
 	uint8_t depth;
 	uint32_t next_hop_add = 100;
 	int32_t status = 0;
@@ -544,37 +545,37 @@ test11(void)
 	TEST_LPM_ASSERT(lpm != NULL);
 
 	depth = 128;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	ip[0] = 1;
+	ip.a[0] = 1;
 	depth = 25;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
 	depth = 33;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
 	depth = 41;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
 	depth = 49;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == -ENOSPC);
 
 	depth = 41;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
 	rte_lpm6_free(lpm);
@@ -592,7 +593,7 @@ test12(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {0};
 	uint8_t depth;
 	uint32_t next_hop_add = 100;
 	int32_t status = 0;
@@ -605,16 +606,16 @@ test12(void)
 	TEST_LPM_ASSERT(lpm != NULL);
 
 	depth = 128;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	ip[0] = 1;
+	ip.a[0] = 1;
 	depth = 41;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
 	depth = 49;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == -ENOSPC);
 
 	rte_lpm6_free(lpm);
@@ -631,7 +632,7 @@ test13(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {0};
 	uint8_t depth;
 	uint32_t next_hop_add = 100;
 	int32_t status = 0;
@@ -644,23 +645,23 @@ test13(void)
 	TEST_LPM_ASSERT(lpm != NULL);
 
 	depth = 1;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
 	depth = 2;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
 	depth = 3;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == -ENOSPC);
 
 	depth = 2;
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
 	depth = 3;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
 	rte_lpm6_free(lpm);
@@ -679,7 +680,7 @@ test14(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {0};
 	uint8_t depth = 25;
 	uint32_t next_hop_add = 100;
 	int32_t status = 0;
@@ -693,24 +694,24 @@ test14(void)
 	TEST_LPM_ASSERT(lpm != NULL);
 
 	for (i = 0; i < 256; i++) {
-		ip[0] = (uint8_t)i;
-		status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+		ip.a[0] = (uint8_t)i;
+		status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 		TEST_LPM_ASSERT(status == 0);
 	}
 
-	ip[0] = 255;
-	ip[1] = 1;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	ip.a[0] = 255;
+	ip.a[1] = 1;
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == -ENOSPC);
 
-	ip[0] = 255;
-	ip[1] = 0;
-	status = rte_lpm6_delete(lpm, ip, depth);
+	ip.a[0] = 255;
+	ip.a[1] = 0;
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	ip[0] = 255;
-	ip[1] = 1;
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	ip.a[0] = 255;
+	ip.a[1] = 1;
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
 	rte_lpm6_free(lpm);
@@ -726,7 +727,7 @@ test15(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {0};
 	uint8_t depth = 24;
 	uint32_t next_hop_add = 100, next_hop_return = 0;
 	int32_t status = 0;
@@ -738,16 +739,16 @@ test15(void)
 	lpm = rte_lpm6_create(__func__, SOCKET_ID_ANY, &config);
 	TEST_LPM_ASSERT(lpm != NULL);
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_free(lpm);
@@ -763,7 +764,7 @@ test16(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = {12,12,1,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip = {.a = {12, 12, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 	uint8_t depth = 128;
 	uint32_t next_hop_add = 100, next_hop_return = 0;
 	int32_t status = 0;
@@ -775,16 +776,16 @@ test16(void)
 	lpm = rte_lpm6_create(__func__, SOCKET_ID_ANY, &config);
 	TEST_LPM_ASSERT(lpm != NULL);
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_free(lpm);
@@ -806,9 +807,13 @@ test17(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip1[] = {127,255,255,255,255,255,255,255,255,
-			255,255,255,255,255,255,255};
-	uint8_t ip2[] = {128,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	struct rte_ipv6_addr ip1 = {
+		.a = {
+			127, 255, 255, 255, 255, 255, 255, 255,
+			255, 255, 255, 255, 255, 255, 255, 255
+		},
+	};
+	struct rte_ipv6_addr ip2 = {.a = {128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 	uint8_t depth;
 	uint32_t next_hop_add, next_hop_return;
 	int32_t status = 0;
@@ -825,14 +830,14 @@ test17(void)
 		/* Let the next_hop_add value = depth. Just for change. */
 		next_hop_add = depth;
 
-		status = rte_lpm6_add(lpm, ip2, depth, next_hop_add);
+		status = rte_lpm6_add(lpm, &ip2, depth, next_hop_add);
 		TEST_LPM_ASSERT(status == 0);
 
 		/* Check IP in first half of tbl24 which should be empty. */
-		status = rte_lpm6_lookup(lpm, ip1, &next_hop_return);
+		status = rte_lpm6_lookup(lpm, &ip1, &next_hop_return);
 		TEST_LPM_ASSERT(status == -ENOENT);
 
-		status = rte_lpm6_lookup(lpm, ip2, &next_hop_return);
+		status = rte_lpm6_lookup(lpm, &ip2, &next_hop_return);
 		TEST_LPM_ASSERT((status == 0) &&
 			(next_hop_return == next_hop_add));
 	}
@@ -841,10 +846,10 @@ test17(void)
 	for (depth = 16; depth >= 1; depth--) {
 		next_hop_add = (depth - 1);
 
-		status = rte_lpm6_delete(lpm, ip2, depth);
+		status = rte_lpm6_delete(lpm, &ip2, depth);
 		TEST_LPM_ASSERT(status == 0);
 
-		status = rte_lpm6_lookup(lpm, ip2, &next_hop_return);
+		status = rte_lpm6_lookup(lpm, &ip2, &next_hop_return);
 
 		if (depth != 1) {
 			TEST_LPM_ASSERT((status == 0) &&
@@ -854,7 +859,7 @@ test17(void)
 			TEST_LPM_ASSERT(status == -ENOENT);
 		}
 
-		status = rte_lpm6_lookup(lpm, ip1, &next_hop_return);
+		status = rte_lpm6_lookup(lpm, &ip1, &next_hop_return);
 		TEST_LPM_ASSERT(status == -ENOENT);
 	}
 
@@ -874,7 +879,7 @@ test18(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[16], ip_1[16], ip_2[16];
+	struct rte_ipv6_addr ip, ip_1, ip_2;
 	uint8_t depth, depth_1, depth_2;
 	uint32_t next_hop_add, next_hop_add_1,
 			next_hop_add_2, next_hop_return;
@@ -885,58 +890,58 @@ test18(void)
 	config.flags = 0;
 
 	/* Add & lookup to hit invalid TBL24 entry */
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 24;
 	next_hop_add = 100;
 
 	lpm = rte_lpm6_create(__func__, SOCKET_ID_ANY, &config);
 	TEST_LPM_ASSERT(lpm != NULL);
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_delete_all(lpm);
 
 	/* Add & lookup to hit valid TBL24 entry not extended */
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 23;
 	next_hop_add = 100;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
 	depth = 24;
 	next_hop_add = 101;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
 	depth = 24;
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
 	depth = 23;
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_delete_all(lpm);
@@ -944,37 +949,37 @@ test18(void)
 	/* Add & lookup to hit valid extended TBL24 entry with invalid TBL8
 	 * entry.
 	 */
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 32;
 	next_hop_add = 100;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	IPv6(ip, 128, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 32;
 	next_hop_add = 101;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 32;
 	next_hop_add = 100;
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_delete_all(lpm);
@@ -982,38 +987,38 @@ test18(void)
 	/* Add & lookup to hit valid extended TBL24 entry with valid TBL8
 	 * entry
 	 */
-	IPv6(ip_1, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_1, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth_1 = 25;
 	next_hop_add_1 = 101;
 
-	IPv6(ip_2, 128, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_2, 128, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth_2 = 32;
 	next_hop_add_2 = 102;
 
 	next_hop_return = 0;
 
-	status = rte_lpm6_add(lpm, ip_1, depth_1, next_hop_add_1);
+	status = rte_lpm6_add(lpm, &ip_1, depth_1, next_hop_add_1);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip_1, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip_1, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add_1));
 
-	status = rte_lpm6_add(lpm, ip_2, depth_2, next_hop_add_2);
+	status = rte_lpm6_add(lpm, &ip_2, depth_2, next_hop_add_2);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip_2, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip_2, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add_2));
 
-	status = rte_lpm6_delete(lpm, ip_2, depth_2);
+	status = rte_lpm6_delete(lpm, &ip_2, depth_2);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip_2, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip_2, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add_1));
 
-	status = rte_lpm6_delete(lpm, ip_1, depth_1);
+	status = rte_lpm6_delete(lpm, &ip_1, depth_1);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip_1, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip_1, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_free(lpm);
@@ -1037,7 +1042,7 @@ test19(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[16];
+	struct rte_ipv6_addr ip;
 	uint8_t depth;
 	uint32_t next_hop_add, next_hop_return;
 	int32_t status = 0;
@@ -1052,35 +1057,35 @@ test19(void)
 	lpm = rte_lpm6_create(__func__, SOCKET_ID_ANY, &config);
 	TEST_LPM_ASSERT(lpm != NULL);
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 16;
 	next_hop_add = 100;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_delete_all(lpm);
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 25;
 	next_hop_add = 100;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
 	rte_lpm6_delete_all(lpm);
@@ -1090,45 +1095,45 @@ test19(void)
 	 * (& delete & lookup)
 	 */
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 24;
 	next_hop_add = 100;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	IPv6(ip, 128, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 32;
 	next_hop_add = 101;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	next_hop_add = 100;
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 24;
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
-	IPv6(ip, 128, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 32;
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_delete_all(lpm);
@@ -1138,28 +1143,28 @@ test19(void)
 	 * (& delete & lookup)
 	 */
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 24;
 	next_hop_add = 100;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
 	next_hop_add = 101;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_delete_all(lpm);
@@ -1169,56 +1174,56 @@ test19(void)
 	 * (& delete & lookup)
 	 */
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 32;
 	next_hop_add = 100;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
 	next_hop_add = 101;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_delete_all(lpm);
 
 	/* Delete a rule that is not present in the TBL24 & lookup */
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 24;
 	next_hop_add = 100;
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status < 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_delete_all(lpm);
 
 	/* Delete a rule that is not present in the TBL8 & lookup */
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 32;
 	next_hop_add = 100;
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status < 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_free(lpm);
@@ -1236,7 +1241,7 @@ test20(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[16];
+	struct rte_ipv6_addr ip;
 	uint8_t depth;
 	uint32_t next_hop_add, next_hop_return;
 	int32_t status = 0;
@@ -1248,45 +1253,45 @@ test20(void)
 	lpm = rte_lpm6_create(__func__, SOCKET_ID_ANY, &config);
 	TEST_LPM_ASSERT(lpm != NULL);
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 24;
 	next_hop_add = 100;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
 	depth = 128;
 	next_hop_add = 101;
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	next_hop_add = 100;
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 24;
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
 	depth = 128;
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT(status == -ENOENT);
 
 	rte_lpm6_free(lpm);
@@ -1304,7 +1309,7 @@ test21(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip_batch[4][16];
+	struct rte_ipv6_addr ip_batch[4];
 	uint8_t depth;
 	uint32_t next_hop_add;
 	int32_t next_hop_return[4];
@@ -1317,28 +1322,28 @@ test21(void)
 	lpm = rte_lpm6_create(__func__, SOCKET_ID_ANY, &config);
 	TEST_LPM_ASSERT(lpm != NULL);
 
-	IPv6(ip_batch[0], 128, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[0], 128, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 48;
 	next_hop_add = 100;
 
-	status = rte_lpm6_add(lpm, ip_batch[0], depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip_batch[0], depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	IPv6(ip_batch[1], 128, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[1], 128, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 48;
 	next_hop_add = 101;
 
-	status = rte_lpm6_add(lpm, ip_batch[1], depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip_batch[1], depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	IPv6(ip_batch[2], 128, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[2], 128, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 48;
 	next_hop_add = 102;
 
-	status = rte_lpm6_add(lpm, ip_batch[2], depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip_batch[2], depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	IPv6(ip_batch[3], 128, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[3], 128, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	status = rte_lpm6_lookup_bulk_func(lpm, ip_batch,
 			next_hop_return, 4);
@@ -1363,7 +1368,7 @@ test22(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip_batch[5][16];
+	struct rte_ipv6_addr ip_batch[5];
 	uint8_t depth[5];
 	uint32_t next_hop_add;
 	int32_t next_hop_return[5];
@@ -1378,39 +1383,39 @@ test22(void)
 
 	/* Adds 5 rules and look them up */
 
-	IPv6(ip_batch[0], 128, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[0], 128, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth[0] = 48;
 	next_hop_add = 101;
 
-	status = rte_lpm6_add(lpm, ip_batch[0], depth[0], next_hop_add);
+	status = rte_lpm6_add(lpm, &ip_batch[0], depth[0], next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	IPv6(ip_batch[1], 128, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[1], 128, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth[1] = 48;
 	next_hop_add = 102;
 
-	status = rte_lpm6_add(lpm, ip_batch[1], depth[1], next_hop_add);
+	status = rte_lpm6_add(lpm, &ip_batch[1], depth[1], next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	IPv6(ip_batch[2], 128, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[2], 128, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth[2] = 48;
 	next_hop_add = 103;
 
-	status = rte_lpm6_add(lpm, ip_batch[2], depth[2], next_hop_add);
+	status = rte_lpm6_add(lpm, &ip_batch[2], depth[2], next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	IPv6(ip_batch[3], 128, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[3], 128, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth[3] = 48;
 	next_hop_add = 104;
 
-	status = rte_lpm6_add(lpm, ip_batch[3], depth[3], next_hop_add);
+	status = rte_lpm6_add(lpm, &ip_batch[3], depth[3], next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	IPv6(ip_batch[4], 128, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[4], 128, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth[4] = 48;
 	next_hop_add = 105;
 
-	status = rte_lpm6_add(lpm, ip_batch[4], depth[4], next_hop_add);
+	status = rte_lpm6_add(lpm, &ip_batch[4], depth[4], next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
 	status = rte_lpm6_lookup_bulk_func(lpm, ip_batch,
@@ -1443,11 +1448,11 @@ test22(void)
 
 	/* Use the delete_bulk function to delete two, one invalid. Lookup again */
 
-	IPv6(ip_batch[4], 128, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[4], 128, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	status = rte_lpm6_delete_bulk_func(lpm, &ip_batch[3], depth, 2);
 	TEST_LPM_ASSERT(status == 0);
 
-	IPv6(ip_batch[4], 128, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip_batch[4], 128, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	status = rte_lpm6_lookup_bulk_func(lpm, ip_batch,
 			next_hop_return, 5);
 	TEST_LPM_ASSERT(status == 0 && next_hop_return[0] == -1
@@ -1481,7 +1486,7 @@ test23(void)
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
 	uint32_t i;
-	uint8_t ip[16];
+	struct rte_ipv6_addr ip;
 	uint8_t depth;
 	uint32_t next_hop_add, next_hop_return;
 	int32_t status = 0;
@@ -1493,22 +1498,22 @@ test23(void)
 	lpm = rte_lpm6_create(__func__, SOCKET_ID_ANY, &config);
 	TEST_LPM_ASSERT(lpm != NULL);
 
-	IPv6(ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	IPv6(&ip, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	depth = 128;
 	next_hop_add = 100;
 
 	for (i = 0; i < 30; i++) {
-		status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+		status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 		TEST_LPM_ASSERT(status == 0);
 
-		status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+		status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 		TEST_LPM_ASSERT((status == 0) &&
 				(next_hop_return == next_hop_add));
 
-		status = rte_lpm6_delete(lpm, ip, depth);
+		status = rte_lpm6_delete(lpm, &ip, depth);
 		TEST_LPM_ASSERT(status == 0);
 
-		status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+		status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 		TEST_LPM_ASSERT(status == -ENOENT);
 	}
 
@@ -1565,7 +1570,7 @@ test25(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[16];
+	struct rte_ipv6_addr ip;
 	uint32_t i;
 	uint8_t depth;
 	uint32_t next_hop_add, next_hop_return, next_hop_expected;
@@ -1579,10 +1584,10 @@ test25(void)
 	TEST_LPM_ASSERT(lpm != NULL);
 
 	for (i = 0; i < 1000; i++) {
-		memcpy(ip, large_route_table[i].ip, 16);
+		memcpy(&ip, &large_route_table[i].ip, 16);
 		depth = large_route_table[i].depth;
 		next_hop_add = large_route_table[i].next_hop;
-		status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+		status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 		TEST_LPM_ASSERT(status == 0);
 	}
 
@@ -1590,10 +1595,10 @@ test25(void)
 	generate_large_ips_table(1);
 
 	for (i = 0; i < 100000; i++) {
-		memcpy(ip, large_ips_table[i].ip, 16);
+		memcpy(&ip, &large_ips_table[i].ip, 16);
 		next_hop_expected = large_ips_table[i].next_hop;
 
-		status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+		status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 		TEST_LPM_ASSERT((status == 0) &&
 				(next_hop_return == next_hop_expected));
 	}
@@ -1615,9 +1620,15 @@ test26(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip_10_32[] = {10, 10, 10, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	uint8_t ip_10_24[] = {10, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	uint8_t ip_20_25[] = {10, 10, 20, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	struct rte_ipv6_addr ip_10_32 = {
+		.a = {10, 10, 10, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	};
+	struct rte_ipv6_addr ip_10_24 = {
+		.a = {10, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	};
+	struct rte_ipv6_addr ip_20_25 = {
+		.a = {10, 10, 20, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	};
 	uint8_t d_ip_10_32 = 32;
 	uint8_t	d_ip_10_24 = 24;
 	uint8_t	d_ip_20_25 = 25;
@@ -1634,29 +1645,26 @@ test26(void)
 	lpm = rte_lpm6_create(__func__, SOCKET_ID_ANY, &config);
 	TEST_LPM_ASSERT(lpm != NULL);
 
-	if ((status = rte_lpm6_add(lpm, ip_10_32, d_ip_10_32,
-			next_hop_ip_10_32)) < 0)
-		return -1;
+	status = rte_lpm6_add(lpm, &ip_10_32, d_ip_10_32, next_hop_ip_10_32);
+	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip_10_32, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip_10_32, &next_hop_return);
 	uint32_t test_hop_10_32 = next_hop_return;
 	TEST_LPM_ASSERT(status == 0);
 	TEST_LPM_ASSERT(next_hop_return == next_hop_ip_10_32);
 
-	if ((status = rte_lpm6_add(lpm, ip_10_24, d_ip_10_24,
-			next_hop_ip_10_24)) < 0)
-			return -1;
+	status = rte_lpm6_add(lpm, &ip_10_24, d_ip_10_24, next_hop_ip_10_24);
+	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip_10_24, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip_10_24, &next_hop_return);
 	uint32_t test_hop_10_24 = next_hop_return;
 	TEST_LPM_ASSERT(status == 0);
 	TEST_LPM_ASSERT(next_hop_return == next_hop_ip_10_24);
 
-	if ((status = rte_lpm6_add(lpm, ip_20_25, d_ip_20_25,
-			next_hop_ip_20_25)) < 0)
-		return -1;
+	status = rte_lpm6_add(lpm, &ip_20_25, d_ip_20_25, next_hop_ip_20_25);
+	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip_20_25, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip_20_25, &next_hop_return);
 	uint32_t test_hop_20_25 = next_hop_return;
 	TEST_LPM_ASSERT(status == 0);
 	TEST_LPM_ASSERT(next_hop_return == next_hop_ip_20_25);
@@ -1671,11 +1679,11 @@ test26(void)
 		return -1;
 	}
 
-	status = rte_lpm6_lookup(lpm, ip_10_32, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip_10_32, &next_hop_return);
 	TEST_LPM_ASSERT(status == 0);
 	TEST_LPM_ASSERT(next_hop_return == next_hop_ip_10_32);
 
-	status = rte_lpm6_lookup(lpm, ip_10_24, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip_10_24, &next_hop_return);
 	TEST_LPM_ASSERT(status == 0);
 	TEST_LPM_ASSERT(next_hop_return == next_hop_ip_10_24);
 
@@ -1695,7 +1703,12 @@ test27(void)
 {
 		struct rte_lpm6 *lpm = NULL;
 		struct rte_lpm6_config config;
-		uint8_t ip[] = {128,128,128,128,128,128,128,128,128,128,128,128,128,128,0,0};
+		struct rte_ipv6_addr ip = {
+			.a = {
+				128, 128, 128, 128, 128, 128, 128, 128,
+				128, 128, 128, 128, 128, 128, 0, 0
+			},
+		};
 		uint8_t depth = 128;
 		uint32_t next_hop_add = 100, next_hop_return;
 		int32_t status = 0;
@@ -1710,19 +1723,19 @@ test27(void)
 
 		depth = 128;
 		next_hop_add = 128;
-		status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+		status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 		TEST_LPM_ASSERT(status == 0);
 
 		depth = 112;
 		next_hop_add = 112;
-		status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+		status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 		TEST_LPM_ASSERT(status == 0);
 
 		for (i = 0; i < 256; i++) {
-			ip[14] = (uint8_t)i;
+			ip.a[14] = i;
 			for (j = 0; j < 256; j++) {
-				ip[15] = (uint8_t)j;
-				status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+				ip.a[15] = j;
+				status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 				if (i == 0 && j == 0)
 					TEST_LPM_ASSERT(status == 0 && next_hop_return == 128);
 				else
@@ -1746,7 +1759,9 @@ test28(void)
 {
 	struct rte_lpm6 *lpm = NULL;
 	struct rte_lpm6_config config;
-	uint8_t ip[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	struct rte_ipv6_addr ip = {
+		.a = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	};
 	uint8_t depth = 16;
 	uint32_t next_hop_add = 0x001FFFFF, next_hop_return = 0;
 	int32_t status = 0;
@@ -1758,13 +1773,13 @@ test28(void)
 	lpm = rte_lpm6_create(__func__, SOCKET_ID_ANY, &config);
 	TEST_LPM_ASSERT(lpm != NULL);
 
-	status = rte_lpm6_add(lpm, ip, depth, next_hop_add);
+	status = rte_lpm6_add(lpm, &ip, depth, next_hop_add);
 	TEST_LPM_ASSERT(status == 0);
 
-	status = rte_lpm6_lookup(lpm, ip, &next_hop_return);
+	status = rte_lpm6_lookup(lpm, &ip, &next_hop_return);
 	TEST_LPM_ASSERT((status == 0) && (next_hop_return == next_hop_add));
 
-	status = rte_lpm6_delete(lpm, ip, depth);
+	status = rte_lpm6_delete(lpm, &ip, depth);
 	TEST_LPM_ASSERT(status == 0);
 	rte_lpm6_free(lpm);
 

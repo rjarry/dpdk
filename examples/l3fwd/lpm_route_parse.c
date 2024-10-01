@@ -108,7 +108,7 @@ lpm_parse_v6_rule(char *str, struct lpm_route_rule *v)
 			return -EINVAL;
 	}
 
-	rc = lpm_parse_v6_net(in[CB_FLD_DST_ADDR], v->ip_32, &v->depth);
+	rc = lpm_parse_v6_net(in[CB_FLD_DST_ADDR], (uint32_t *)&v->ip6, &v->depth);
 
 	GET_CB_FIELD(in[CB_FLD_IF_OUT], v->if_out, 0, UINT8_MAX, 0);
 
@@ -164,8 +164,8 @@ lpm_add_default_v6_rules(void)
 	route_base_v6 = calloc(route_num_v6, rule_size);
 
 	for (i = 0; i < (unsigned int)route_num_v6; i++) {
-		memcpy(route_base_v6[i].ip_8, ipv6_l3fwd_route_array[i].ip,
-			   sizeof(route_base_v6[i].ip_8));
+		memcpy(&route_base_v6[i].ip, ipv6_l3fwd_route_array[i].ip,
+			   sizeof(route_base_v6[i].ip));
 		route_base_v6[i].depth = ipv6_l3fwd_route_array[i].depth;
 		route_base_v6[i].if_out = ipv6_l3fwd_route_array[i].if_out;
 	}
