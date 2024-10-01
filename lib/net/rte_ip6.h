@@ -16,6 +16,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #ifdef RTE_EXEC_ENV_WINDOWS
 #include <ws2tcpip.h>
@@ -29,6 +30,7 @@
 
 #include <rte_byteorder.h>
 #include <rte_mbuf.h>
+#include <rte_memcpy.h>
 #include <rte_cksum.h>
 
 #ifdef __cplusplus
@@ -44,6 +46,121 @@ extern "C" {
 struct rte_ipv6_addr {
 	unsigned char a[RTE_IPV6_ADDR_SIZE];
 };
+
+/** Shorthand to initialize IPv6 address values */
+#define RTE_IPV6_ADDR(...) ((struct rte_ipv6_addr){.a = {__VA_ARGS__}})
+
+/**
+ * Copy an IPv6 address into another one.
+ *
+ * @param dst
+ *   The address into which to copy data.
+ * @param src
+ *   The address from which to copy.
+ */
+static inline void
+rte_ipv6_addr_cpy(struct rte_ipv6_addr *dst, const struct rte_ipv6_addr *src)
+{
+	rte_memcpy(dst, src, sizeof(*dst));
+}
+
+/**
+ * Check if two IPv6 Addresses are equal.
+ */
+static inline bool
+rte_ipv6_addr_eq(const struct rte_ipv6_addr *a, const struct rte_ipv6_addr *b)
+{
+	return memcmp(a, b, sizeof(*a)) == 0;
+}
+
+/**
+ * Mask an IPv6 address using the specified depth.
+ *
+ * Leave untouched one bit per unit in the depth variable and set the rest to 0.
+ *
+ * @param ip
+ *   The address to mask.
+ * @param depth
+ *   All bits starting from this bit number will be set to zero.
+ */
+static inline void
+rte_ipv6_addr_mask(struct rte_ipv6_addr *ip, uint8_t depth)
+{
+	if (depth < RTE_IPV6_MAX_DEPTH) {
+		uint8_t d = depth / 8;
+		uint8_t mask = ~(UINT8_MAX >> (depth % 8));
+		ip->a[d] &= mask;
+		d++;
+		memset(&ip->a[d], 0, sizeof(*ip) - d);
+	}
+}
+
+/**
+ * Check if two IPv6 addresses belong to the same network prefix.
+ *
+ * @param a
+ *  The first address or network.
+ * @param b
+ *  The second address or network.
+ * @param depth
+ *  The network prefix length.
+ */
+static inline bool
+rte_ipv6_addr_eq_prefix(const struct rte_ipv6_addr *a, const struct rte_ipv6_addr *b, uint8_t depth)
+{
+	if (depth < RTE_IPV6_MAX_DEPTH) {
+		uint8_t d = depth / 8;
+		uint8_t mask = ~(UINT8_MAX >> (depth % 8));
+
+		if ((a->a[d] ^ b->a[d]) & mask)
+			return false;
+
+		return memcmp(a, b, d) == 0;
+	}
+	return rte_ipv6_addr_eq(a, b);
+}
+
+/**
+ * Get the depth of a given IPv6 address mask.
+ *
+ * This function does not handle masks with "holes" and will return the number
+ * of consecurive bits set to 1 starting from the beginning of the mask.
+ *
+ * @param mask
+ *   The address mask.
+ */
+static inline uint8_t
+rte_ipv6_mask_depth(const struct rte_ipv6_addr *mask)
+{
+	uint8_t depth = 0;
+
+	for (int i = 0; i < RTE_IPV6_ADDR_SIZE; i++) {
+		uint8_t m = mask->a[i];
+		if (m == 0xff) {
+			depth += 8;
+		} else {
+			while (m & 0x80) {
+				m <<= 1;
+				depth++;
+			}
+			break;
+		}
+	}
+
+	return depth;
+}
+
+#define RTE_IPV6_ADDR_UNSPEC RTE_IPV6_ADDR(0)
+
+/**
+ * Check if an IPv6 address is unspecified as defined in RFC 4291, section 2.5.2.
+ */
+static inline bool
+rte_ipv6_addr_is_unspec(const struct rte_ipv6_addr *ip)
+{
+	struct rte_ipv6_addr unspec = RTE_IPV6_ADDR_UNSPEC;
+	return rte_ipv6_addr_eq(ip, &unspec);
+}
 
 /**
  * IPv6 Header
