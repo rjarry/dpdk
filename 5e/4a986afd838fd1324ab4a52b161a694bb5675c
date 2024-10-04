@@ -1,3 +1,6 @@
-v3: replaced {rte_,}memcpy with struct assignments
+v3:
+
+- replaced {rte_,}memcpy with struct assignments
+- replaced string initializers with RTE_IPV6_ADDR() macros
 
 v2: updated changelog for 24.11
