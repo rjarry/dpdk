@@ -1,2 +1,3 @@
-v3: updated after rte_ipv6_addr_cpy removal
+v3: replaced rte_ipv6_addr_cpy and {rte_,}memcpy with struct assignments
+
 v2: updated changelog for 24.11
