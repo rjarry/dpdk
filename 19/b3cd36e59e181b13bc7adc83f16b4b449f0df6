@@ -1,1 +1,3 @@
+v3: replaced {rte_,}memcpy with struct assignments
+
 v2: updated changelog for 24.11
