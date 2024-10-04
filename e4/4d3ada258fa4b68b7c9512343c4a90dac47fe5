@@ -1,3 +1,5 @@
+v3: moved RTE_IPV6_MAX_DEPTH addition in that commit
+
 v2:
 
 - added RTE_IPV6_ADDR() helper macro
