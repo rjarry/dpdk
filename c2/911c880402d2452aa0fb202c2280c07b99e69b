@@ -1,0 +1,4 @@
+v3:
+
+- moved RTE_IPV6_ADDR_MAX_DEPTH to later where it is used
+- moved RTE_IPV6_ADDR macro here for use in the next commit
