@@ -16,6 +16,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #ifdef RTE_EXEC_ENV_WINDOWS
 #include <ws2tcpip.h>
@@ -34,6 +35,148 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define RTE_IPV6_ADDR_SIZE sizeof(struct in6_addr)
+#define RTE_IPV6_MAX_DEPTH (RTE_IPV6_ADDR_SIZE * CHAR_BIT)
+
+/**
+ * Split a literal 16 bit unsigned integer into two bytes separated by a comma
+ * according to the platform endianness.
+ */
+#if RTE_BYTE_ORDER == RTE_BIG_ENDIAN
+#define RTE_IPV6_U16_SPLIT(w)                                                  \
+	(uint8_t)((uint16_t)(w) & UINT16_C(0x00ff)), (((uint16_t)(w) & UINT16_C(0xff00)) >> 8)
+#else
+#define RTE_IPV6_U16_SPLIT(w)                                                  \
+	(((uint16_t)(w) & UINT16_C(0xff00)) >> 8), (uint8_t)((uint16_t)(w) & UINT16_C(0x00ff))
+#endif
+
+/**
+ * Shorthand to define a literal IPv6 address based on 16bit unsigned integers.
+ */
+#define RTE_IPV6(a, b, c, d, e, f, g, h)                                       \
+	{{{                                                                    \
+		RTE_IPV6_U16_SPLIT(a),                                         \
+		RTE_IPV6_U16_SPLIT(b),                                         \
+		RTE_IPV6_U16_SPLIT(c),                                         \
+		RTE_IPV6_U16_SPLIT(d),                                         \
+		RTE_IPV6_U16_SPLIT(e),                                         \
+		RTE_IPV6_U16_SPLIT(f),                                         \
+		RTE_IPV6_U16_SPLIT(g),                                         \
+		RTE_IPV6_U16_SPLIT(h)                                          \
+	}}}
+
+#define RTE_IPV6_ADDR_BCAST_INIT                                               \
+	RTE_IPV6(0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff)
+
+/**
+ * printf format element for in6_addr structures.
+ */
+#define RTE_IPV6_ADDR_FMT                                                      \
+	"%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x"
+
+/**
+ * For use with RTE_IPV6_ADDR_FMT. E.g.:
+ *
+ *   printf(RTE_IPV6_ADDR_FMT "\n", RTE_IPV6_ADDR_SPLIT(&ip));
+ *
+ * @param addr
+ *   A struct in6_addr pointer.
+ */
+#define RTE_IPV6_ADDR_SPLIT(addr)                                              \
+	((addr)->s6_addr[0]),                                                  \
+	((addr)->s6_addr[1]),                                                  \
+	((addr)->s6_addr[2]),                                                  \
+	((addr)->s6_addr[3]),                                                  \
+	((addr)->s6_addr[4]),                                                  \
+	((addr)->s6_addr[5]),                                                  \
+	((addr)->s6_addr[6]),                                                  \
+	((addr)->s6_addr[7]),                                                  \
+	((addr)->s6_addr[8]),                                                  \
+	((addr)->s6_addr[9]),                                                  \
+	((addr)->s6_addr[10]),                                                 \
+	((addr)->s6_addr[11]),                                                 \
+	((addr)->s6_addr[12]),                                                 \
+	((addr)->s6_addr[13]),                                                 \
+	((addr)->s6_addr[14]),                                                 \
+	((addr)->s6_addr[15])
+
+/**
+ * Mask an IPv6 address using the specified depth.
+ *
+ * Leave untouched one bit per unit in the depth variable and set the rest to 0.
+ *
+ * @param ip
+ *   The address to mask.
+ * @param depth
+ *   All bits starting from this bit number will be set to zero.
+ */
+static inline void
+rte_ipv6_addr_mask(struct in6_addr *ip, uint8_t depth)
+{
+	if (depth < RTE_IPV6_MAX_DEPTH) {
+		uint8_t d = depth / 8;
+		uint8_t mask = ~(UINT8_MAX >> (depth % 8));
+		ip->s6_addr[d] &= mask;
+		d++;
+		memset(&ip->s6_addr[d], 0, sizeof(*ip) - d);
+	}
+}
+
+/**
+ * Check if two IPv6 addresses belong to the same network prefix.
+ *
+ * @param a
+ *  The first address or network.
+ * @param b
+ *  The second address or network.
+ * @param depth
+ *  The network prefix length.
+ */
+static inline bool
+rte_ipv6_addr_eq_prefix(const struct in6_addr *a, const struct in6_addr *b, uint8_t depth)
+{
+	if (depth < RTE_IPV6_MAX_DEPTH) {
+		uint8_t d = depth / 8;
+		uint8_t mask = ~(UINT8_MAX >> (depth % 8));
+
+		if ((a->s6_addr[d] ^ b->s6_addr[d]) & mask)
+			return false;
+
+		return memcmp(a, b, d) == 0;
+	}
+	return IN6_ARE_ADDR_EQUAL(a, b);
+}
+
+/**
+ * Get the depth of a given IPv6 address mask.
+ *
+ * This function does not handle masks with "holes" and will return the number
+ * of consecurive bits set to 1 starting from the beginning of the mask.
+ *
+ * @param mask
+ *   The address mask.
+ */
+static inline uint8_t
+rte_ipv6_mask_depth(const struct in6_addr *mask)
+{
+	uint8_t depth = 0;
+
+	for (unsigned int i = 0; i < RTE_DIM(mask->s6_addr); i++) {
+		uint8_t m = mask->s6_addr[i];
+		if (m == 0xff) {
+			depth += 8;
+		} else {
+			while (m & 0x80) {
+				m <<= 1;
+				depth++;
+			}
+			break;
+		}
+	}
+
+	return depth;
+}
 
 /**
  * IPv6 Header
