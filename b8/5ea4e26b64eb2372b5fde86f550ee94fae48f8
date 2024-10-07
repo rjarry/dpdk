@@ -1,0 +1,4 @@
+v3:
+
+- replaced {rte_,}memcpy with struct assignments
+- replaced rte_ipv6_addr with standard in6_addr struct
