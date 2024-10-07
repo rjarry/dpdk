@@ -1,0 +1,1 @@
+v3: removed now redundant rte_ipv6_addr_eq and rte_ipv6_addr_cpy functions
