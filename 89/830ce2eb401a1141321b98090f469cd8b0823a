@@ -1,0 +1,10 @@
+v3:
+
+- replaced custom rte_ipv6_addr with standard in6_addr struct
+- added IN6ADDR() and IN6ADDR_BCAST_INIT macros to shorten static definitions
+- replaced {rte_,}memcpy with struct assignments
+- replaced string initializers with literal arrays
+
+v2: updated changelog for 24.11
+
+v3: removed now redundant rte_ipv6_addr_eq and rte_ipv6_addr_cpy functions
