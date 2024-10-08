@@ -1,0 +1,1 @@
+v3: replaced rte_ipv6_addr_* functions with IN6_* standard macros
