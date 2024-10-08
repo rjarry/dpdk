@@ -1,0 +1,4 @@
+v3:
+
+- reworked with in6_addr standard struct
+- replaced string initializers with RTE_IPV6_ADDR_BCAST_INIT
