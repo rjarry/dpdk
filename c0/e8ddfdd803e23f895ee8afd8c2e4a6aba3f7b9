@@ -1,0 +1,4 @@
+v3:
+
+- replace *memcpy() with direct struct assignments
+- replace more uint8_t arrays with rte_ipv6_addr in examples
