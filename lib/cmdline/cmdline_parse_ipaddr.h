@@ -9,6 +9,7 @@
 
 #include <cmdline_parse.h>
 #include <rte_ip.h>
+#include <rte_ip6.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +23,7 @@ struct cmdline_ipaddr {
 	uint8_t family;
 	union {
 		struct in_addr ipv4;
-		struct in6_addr ipv6;
+		struct rte_ipv6_addr ipv6;
 	} addr;
 	unsigned int prefixlen; /* in case of network only */
 };

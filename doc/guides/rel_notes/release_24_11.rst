@@ -284,8 +284,12 @@ API Changes
 * net: The ``rte_ipv6_hdr`` structure was modified to use ``struct rte_ipv6_addr`` instead of
   ``uint8_t[16]`` fields.
 
+
 * lpm6: All public API functions were modified to use ``struct rte_ipv6_addr`` instead of
   ``uint8_t[16]`` parameters.
+
+* cmdline: ``cmdline_ipaddr_t`` was modified to use ``struct rte_ipv6_addr`` instead of
+  ``struct in6_addr``.
 
 
 ABI Changes
