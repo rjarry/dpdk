@@ -1,0 +1,1 @@
+v3: replace memcpy() with direct struct assignments
