@@ -1,0 +1,6 @@
+v3:
+
+- replace *memcpy(ipv6) with direct struct assignments
+- use RTE_IPV6_ADDR_FMT and RTE_IPV6_ADDR_SPLIT when possible
+- use RTE_IPV6_ADDR_UNSPEC instead of {0}
+- use RTE_IPV6() instead of RTE_IPV6_ADDR()
