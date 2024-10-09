@@ -900,10 +900,8 @@ struct vxlan_encap_conf vxlan_encap_conf = {
 	.udp_dst = RTE_BE16(RTE_VXLAN_DEFAULT_PORT),
 	.ipv4_src = RTE_IPV4(127, 0, 0, 1),
 	.ipv4_dst = RTE_IPV4(255, 255, 255, 255),
-	.ipv6_src = "\x00\x00\x00\x00\x00\x00\x00\x00"
-		"\x00\x00\x00\x00\x00\x00\x00\x01",
-	.ipv6_dst = "\x00\x00\x00\x00\x00\x00\x00\x00"
-		"\x00\x00\x00\x00\x00\x00\x11\x11",
+	.ipv6_src = RTE_IPV6_ADDR_LOOPBACK,
+	.ipv6_dst = RTE_IPV6(0, 0, 0, 0, 0, 0, 0, 0x1111),
 	.vlan_tci = 0,
 	.ip_tos = 0,
 	.ip_ttl = 255,
@@ -934,10 +932,8 @@ struct nvgre_encap_conf nvgre_encap_conf = {
 	.tni = "\x00\x00\x00",
 	.ipv4_src = RTE_IPV4(127, 0, 0, 1),
 	.ipv4_dst = RTE_IPV4(255, 255, 255, 255),
-	.ipv6_src = "\x00\x00\x00\x00\x00\x00\x00\x00"
-		"\x00\x00\x00\x00\x00\x00\x00\x01",
-	.ipv6_dst = "\x00\x00\x00\x00\x00\x00\x00\x00"
-		"\x00\x00\x00\x00\x00\x00\x11\x11",
+	.ipv6_src = RTE_IPV6_ADDR_LOOPBACK,
+	.ipv6_dst = RTE_IPV6(0, 0, 0, 0, 0, 0, 0, 0x1111),
 	.vlan_tci = 0,
 	.eth_src = "\x00\x00\x00\x00\x00\x00",
 	.eth_dst = "\xff\xff\xff\xff\xff\xff",
@@ -11890,7 +11886,7 @@ parse_ipv6_addr(struct context *ctx, const struct token *token,
 {
 	const struct arg *arg = pop_args(ctx);
 	char str2[len + 1];
-	struct in6_addr tmp;
+	struct rte_ipv6_addr tmp;
 	int ret;
 
 	(void)token;
