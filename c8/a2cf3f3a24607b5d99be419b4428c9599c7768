@@ -1,0 +1,4 @@
+v3:
+
+- replace memcpy() with direct struct assignments
+- replace string initializers with RTE_IPV6()
