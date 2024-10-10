@@ -4,4 +4,4 @@ v3:
 - remove rte_ipv6_addr_cpy()
 - rename RTE_IPV6_ADDR(...) to RTE_IPV6() to match RTE_IPV4()
 - add RTE_IPV6_ADDR_FMT and RTE_IPV6_ADDR_SPLIT()
-- add RTE_IPV6_ADDR_LOOPBACK and RTE_IPV6_ADDR_BROADCAST
+- add RTE_IPV6_ADDR_LOOPBACK and RTE_IPV6_MASK_FULL
