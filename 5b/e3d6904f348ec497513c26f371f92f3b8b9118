@@ -2,3 +2,4 @@ v3:
 
 - replace memcpy() with direct struct assignments
 - replace ad-hoc array initializers with RTE_IPV6()
+- replace in6_addr with rte_ipv6_addr in rte_security
