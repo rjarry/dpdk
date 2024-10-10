@@ -1,0 +1,1 @@
+v3: replace string initializers with RTE_IPV6_MASK_FULL
