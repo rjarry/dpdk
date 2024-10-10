@@ -4,3 +4,4 @@ v3:
 - use RTE_IPV6_ADDR_FMT and RTE_IPV6_ADDR_SPLIT when possible
 - use RTE_IPV6_ADDR_UNSPEC instead of {0}
 - use RTE_IPV6() instead of RTE_IPV6_ADDR()
+- replace in6_addr with rte_ipv6_addr now that cmdline uses it
