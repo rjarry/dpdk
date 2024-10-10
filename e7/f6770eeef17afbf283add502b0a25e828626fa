@@ -1,0 +1,3 @@
+v3:
+
+- replace string initializers and RTE_IPV6_ADDR() with RTE_IPV6()
