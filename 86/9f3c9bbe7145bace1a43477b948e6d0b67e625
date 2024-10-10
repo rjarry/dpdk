@@ -1,0 +1,7 @@
+v3:
+
+- replace memcpy() with direct struct assignments
+- restore RTE_FIB6_IPV6_ADDR_SIZE, RTE_FIB6_MAXDEPTH, TRIE_MAX_DEPTH,
+  RTE_LPM6_MAX_DEPTH, RTE_LPM6_IPV6_ADDR_SIZE, RTE_RIB6_IPV6_ADDR_SIZE
+  and mark them as RTE_DEPRECATED()
+- replace string initializers with RTE_IPV6()
