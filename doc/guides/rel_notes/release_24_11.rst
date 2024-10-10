@@ -185,6 +185,9 @@ API Changes
 * cmdline: ``cmdline_ipaddr_t`` was modified to use ``struct rte_ipv6_addr`` instead of ``in6_addr``.
 * node: ``rte_node_ip6_route_add()`` was modified to use a ``struct rte_ipv6_addr`` instead of ``uint8_t[16]`` parameter.
 * pipeline: ``rte_table_action_ipv6_header`` and ``rte_table_action_nat_params`` were modified to use ``struct rte_ipv6_addr`` instead of ``uint8_t[16]`` fields.
+* pipeline: ``rte_swx_ipsec_sa_encap_params`` was modified to use ``rte_ipv6_addr`` instead of ``in6_addr``.
+* ipsec: ``rte_ipsec_sadv6_key`` was modified to use ``struct rte_ipv6_addr`` instead of ``uint8_t[16]`` fields.
+* security: ``rte_security_ipsec_tunnel_param`` was modified to use ``rte_ipv6_addr`` instead of ``in6_addr``.
 
 ABI Changes
 -----------
