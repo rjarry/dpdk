@@ -299,6 +299,9 @@ API Changes
 * pipeline: the ``rte_swx_ipsec_sa_encap_params`` was modified to use ``struct rte_ipv6_addr``
   instead of ``struct in6_addr`` fields.
 
+* ipsec: ``rte_ipsec_sadv6_key`` was modified to use ``struct rte_ipv6_addr`` instead of
+  ``uint8_t[16]`` fields.
+
 
 ABI Changes
 -----------
