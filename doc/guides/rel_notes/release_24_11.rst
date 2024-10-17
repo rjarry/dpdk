@@ -302,6 +302,9 @@ API Changes
 * ipsec: ``rte_ipsec_sadv6_key`` was modified to use ``struct rte_ipv6_addr`` instead of
   ``uint8_t[16]`` fields.
 
+* security: ``rte_security_ipsec_tunnel_param`` was modified to use ``struct rte_ipv6_addr`` instead
+  of ``struct in6_addr``.
+
 
 ABI Changes
 -----------
