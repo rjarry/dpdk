@@ -184,6 +184,17 @@ void __rte_node_stream_alloc_size(struct rte_graph *graph,
 
 /* Fast path helper functions */
 
+struct rte_node_enqueue_state {
+	uint16_t run_start;
+	rte_edge_t last_edge;
+};
+
+RTE_DECLARE_PER_LCORE(struct rte_node_enqueue_state, node_enqueue_state);
+
+static inline void
+__rte_node_enqueue_deferred_flush(struct rte_graph *, struct rte_node *,
+				  struct rte_node_enqueue_state *,  void **, uint16_t);
+
 /**
  * @internal
  *
@@ -197,6 +208,7 @@ void __rte_node_stream_alloc_size(struct rte_graph *graph,
 static __rte_always_inline void
 __rte_node_process(struct rte_graph *graph, struct rte_node *node)
 {
+	struct rte_node_enqueue_state *st = &RTE_PER_LCORE(node_enqueue_state);
 	uint64_t start;
 	uint16_t rc;
 	void **objs;
@@ -204,6 +216,8 @@ __rte_node_process(struct rte_graph *graph, struct rte_node *node)
 	RTE_ASSERT(node->fence == RTE_GRAPH_FENCE);
 	objs = node->objs;
 	rte_prefetch0(objs);
+	st->run_start = 0;
+	st->last_edge = RTE_EDGE_ID_INVALID;
 
 	if (rte_graph_has_stats_feature()) {
 		start = rte_rdtsc();
@@ -214,6 +228,10 @@ __rte_node_process(struct rte_graph *graph, struct rte_node *node)
 	} else {
 		node->process(graph, node, objs, node->idx);
 	}
+
+	if (st->last_edge != RTE_EDGE_ID_INVALID)
+		__rte_node_enqueue_deferred_flush(graph, node, st, objs, node->idx);
+
 	node->idx = 0;
 }
 
@@ -549,6 +567,69 @@ rte_node_next_stream_move(struct rte_graph *graph, struct rte_node *src,
 		__rte_node_enqueue_tail_update(graph, dst);
 	} else { /* Move the objects from src node to dst node */
 		rte_node_enqueue(graph, src, next, src->objs, src->idx);
+	}
+}
+
+/**
+ * Enqueue one object to a next node in a cache-efficient deferred manner.
+ *
+ * This function tracks runs of consecutive objects going to the same edge.
+ * When the edge changes, the previous run is flushed using bulk enqueue.
+ * At the end of node processing, any remaining objects are flushed
+ * automatically. When all objects go to the same edge (the common case),
+ * rte_node_next_stream_move() is used which swaps pointers and updates the
+ * destination node index only once.
+ *
+ * For homogeneous traffic, the destination node structure is touched once
+ * per batch instead of once per object, reducing cache line bouncing.
+ *
+ * @param graph
+ *   Graph pointer returned from rte_graph_lookup().
+ * @param node
+ *   Current node pointer.
+ * @param next
+ *   Relative next node index to enqueue to.
+ * @param objs
+ *   Pointer to the first object in the node's input stream (node->objs).
+ * @param idx
+ *   Index of the current object being processed.
+ *
+ * @see rte_node_enqueue_x1(), rte_node_next_stream_move().
+ */
+static inline void
+rte_node_enqueue_deferred(struct rte_graph *graph, struct rte_node *node,
+			  rte_edge_t next, void **objs, uint16_t idx)
+{
+	struct rte_node_enqueue_state *st = &RTE_PER_LCORE(node_enqueue_state);
+
+	if (st->last_edge == RTE_EDGE_ID_INVALID) {
+		/* first enqueue */
+		st->last_edge = next;
+	} else if (next != st->last_edge) {
+		/* edge changed, flush previous run */
+		rte_node_enqueue(graph, node, st->last_edge,
+				 &objs[st->run_start], idx - st->run_start);
+		st->run_start = idx;
+		st->last_edge = next;
+	}
+}
+
+/**
+ * @internal
+ * Flush any pending deferred enqueue at end of node processing.
+ */
+static inline void
+__rte_node_enqueue_deferred_flush(struct rte_graph *graph, struct rte_node *node,
+				  struct rte_node_enqueue_state *st,
+				  void **objs, uint16_t count)
+{
+	if (st->run_start == 0 && count != 0) {
+		/* All packets went to the same edge - use stream move (pointer swap) */
+		rte_node_next_stream_move(graph, node, st->last_edge);
+	} else if (st->run_start < count) {
+		/* flush final run */
+		rte_node_enqueue(graph, node, st->last_edge,
+				 &objs[st->run_start], count - st->run_start);
 	}
 }
 

@@ -6,6 +6,9 @@
 #include "rte_graph_worker_common.h"
 #include "graph_private.h"
 
+RTE_EXPORT_SYMBOL(per_lcore_node_enqueue_state)
+RTE_DEFINE_PER_LCORE(struct rte_node_enqueue_state, node_enqueue_state);
+
 RTE_EXPORT_SYMBOL(rte_graph_model_is_valid)
 bool
 rte_graph_model_is_valid(uint8_t model)
