@@ -412,6 +412,8 @@ rte_node_enqueue_x4(struct rte_graph *graph, struct rte_node *node,
 	node->idx = idx;
 }
 
+static inline void rte_node_next_stream_move(struct rte_graph *, struct rte_node *, rte_edge_t);
+
 /**
  * Enqueue objs to multiple next nodes for further processing and
  * set the next nodes to pending state in the circular buffer.
@@ -432,10 +434,24 @@ static inline void
 rte_node_enqueue_next(struct rte_graph *graph, struct rte_node *node,
 		      rte_edge_t *nexts, void **objs, uint16_t nb_objs)
 {
+	rte_edge_t last = nexts[0];
+	uint16_t run_start = 0;
 	uint16_t i;
 
-	for (i = 0; i < nb_objs; i++)
-		rte_node_enqueue_x1(graph, node, nexts[i], objs[i]);
+
+
+	for (i = 1; i < nb_objs; i++) {
+		if (nexts[i] != last) {
+			rte_node_enqueue(graph, node, last, &objs[run_start], i - run_start);
+			run_start = i;
+			last = nexts[i];
+		}
+	}
+	if (run_start == 0) {
+		rte_node_next_stream_move(graph, node, last);
+	} else {
+		rte_node_enqueue(graph, node, last, &objs[run_start], nb_objs - run_start);
+	}
 }
 
 /**
