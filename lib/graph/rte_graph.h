@@ -502,6 +502,10 @@ struct rte_node_register {
 	struct rte_node_xstats *xstats; /**< Node specific xstats. */
 	rte_node_t id;		    /**< Node Identifier. */
 	rte_node_t parent_id;       /**< Identifier of parent node. */
+#define RTE_NODE_STREAM_SLOTS_MAX 4
+	uint8_t nb_stream_edges;    /**< Number of preferred stream edges. */
+	/** Preferred edges for rte_node_next_stream_enqueue(). */
+	rte_edge_t stream_edges[RTE_NODE_STREAM_SLOTS_MAX];
 	rte_edge_t nb_edges;        /**< Number of edges from this node. */
 	const char *next_nodes[];   /**< Names of next nodes. */
 };
@@ -604,6 +608,27 @@ rte_edge_t rte_node_edge_count(rte_node_t id);
  */
 rte_edge_t rte_node_edge_update(rte_node_t id, rte_edge_t from,
 				const char **next_nodes, uint16_t nb_edges);
+
+/**
+ * Update the preferred stream edges for a node.
+ *
+ * Configures which next edges will use cached destination streams when
+ * calling rte_node_next_stream_enqueue(). Must be called before graph
+ * creation or between graph walks.
+ *
+ * @param id
+ *   Valid node id.
+ * @param edges
+ *   Array of preferred next edge indices.
+ * @param nb_edges
+ *   Number of edges (must be <= RTE_NODE_STREAM_SLOTS_MAX).
+ *
+ * @return
+ *   0 on success, -EINVAL on error.
+ */
+__rte_experimental
+int rte_node_stream_edges_update(rte_node_t id, const rte_edge_t *edges,
+				 uint8_t nb_edges);
 
 /**
  * Shrink the edges to a given size.

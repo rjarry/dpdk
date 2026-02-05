@@ -344,46 +344,23 @@ The second kind of such node is ``intermediate nodes`` that decide what is the
 
 * Secondly, each packet needs to be queued to its next node.
 
-This can be done using ``rte_node_enqueue_[x1|x2|x4]()`` APIs if
-they are to single next or ``rte_node_enqueue_next()`` that takes array of nexts.
+The recommended approach is to use the ``rte_node_next_stream_enqueue*()``
+family of functions. These maintain a small cache of destination streams (up to
+``RTE_NODE_STREAM_SLOTS_MAX`` edges) and write objects directly into them,
+keeping destination cache lines hot. The variants ``_x1``, ``_x2`` and ``_x4``
+accept per-object edge indices and handle the common case where all objects
+share the same edge with a single slot lookup.
 
-In scenario where multiple intermediate nodes are present but most of the time
-each node using the same next node for all its packets, the cost of moving every
-pointer from current node's stream to next node's stream could be avoided.
-This is called home run and ``rte_node_next_stream_move()`` could be used to
-just move stream from the current node to the next node with least number of cycles.
-Since this can be avoided only in the case where all the packets are destined
-to the same next node, node implementation should be also having worst-case
-handling where every packet could be going to different next node.
+The preferred edges can be declared statically in the node registration
+(``stream_edges[]``) or updated at runtime with
+``rte_node_stream_edges_update()``. When no edges are declared, slots are
+assigned dynamically as new edges are encountered. When all objects go to the
+same edge (common case), ``rte_node_next_stream_move()`` is used at flush time
+which swaps stream pointers instead of copying.
 
-Example of intermediate node implementation with home run:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-#. Start with speculation that next_node = node->ctx.
-   This could be the next_node application used in the previous function call of this node.
-
-#. Get the next_node stream array with required space using
-   ``rte_node_next_stream_get(next_node, space)``.
-
-#. while n_left_from > 0 (i.e packets left to be sent) prefetch next pkt_set
-   and process current pkt_set to find their next node
-
-#. if all the next nodes of the current pkt_set match speculated next node,
-   just count them as successfully speculated(``last_spec``) till now and
-   continue the loop without actually moving them to the next node. else if there is
-   a mismatch, copy all the pkt_set pointers that were ``last_spec`` and move the
-   current pkt_set to their respective next's nodes using ``rte_enqueue_next_x1()``.
-   Also, one of the next_node can be updated as speculated next_node if it is more
-   probable. Finally, reset ``last_spec`` to zero.
-
-#. if n_left_from != 0 then goto 3) to process remaining packets.
-
-#. if last_spec == nb_objs, All the objects passed were successfully speculated
-   to single next node. So, the current stream can be moved to next node using
-   ``rte_node_next_stream_move(node, next_node)``.
-   This is the ``home run`` where memcpy of buffer pointers to next node is avoided.
-
-#. Update the ``node->ctx`` with more probable next node.
+Alternatively, ``rte_node_enqueue_[x1|x2|x4]()`` APIs can be used to enqueue
+objects to a single next node, or ``rte_node_enqueue_next()`` which takes an
+array of nexts.
 
 Graph object memory layout
 --------------------------

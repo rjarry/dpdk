@@ -56,6 +56,8 @@ struct node {
 	rte_node_fini_t fini;	      /**< Node fini function. */
 	rte_node_t id;		      /**< Allocated identifier for the node. */
 	rte_node_t parent_id;	      /**< Parent node identifier. */
+	uint8_t nb_stream_edges;      /**< Number of preferred stream edges. */
+	rte_edge_t stream_edges[RTE_NODE_STREAM_SLOTS_MAX];
 	rte_edge_t nb_edges;	      /**< Number of edges from this node. */
 	struct rte_node_xstats *xstats;	      /**< Node specific xstats. */
 	char next_nodes[][RTE_NODE_NAMESIZE]; /**< Names of next nodes. */

@@ -123,6 +123,11 @@ __rte_node_register(const struct rte_node_register *reg)
 		goto fail;
 	}
 
+	if (reg->nb_stream_edges > RTE_NODE_STREAM_SLOTS_MAX) {
+		rte_errno = EINVAL;
+		goto fail;
+	}
+
 	/* Check for duplicate name */
 	if (node_has_duplicate_entry(reg->name))
 		goto fail;
@@ -157,6 +162,9 @@ __rte_node_register(const struct rte_node_register *reg)
 	node->init = reg->init;
 	node->fini = reg->fini;
 	node->nb_edges = reg->nb_edges;
+	node->nb_stream_edges = reg->nb_stream_edges;
+	memcpy(node->stream_edges, reg->stream_edges,
+	       node->nb_stream_edges * sizeof(rte_edge_t));
 	node->parent_id = reg->parent_id;
 	for (i = 0; i < reg->nb_edges; i++) {
 		if (rte_strscpy(node->next_nodes[i], reg->next_nodes[i],
@@ -220,6 +228,9 @@ node_clone(struct node *node, const char *name)
 	reg->init = node->init;
 	reg->fini = node->fini;
 	reg->nb_edges = node->nb_edges;
+	reg->nb_stream_edges = node->nb_stream_edges;
+	memcpy(reg->stream_edges, node->stream_edges,
+	       node->nb_stream_edges * sizeof(rte_edge_t));
 	reg->parent_id = node->id;
 
 	for (i = 0; i < node->nb_edges; i++)
@@ -410,6 +421,35 @@ rte_node_edge_update(rte_node_t id, rte_edge_t from, const char **next_nodes,
 	graph_spinlock_unlock();
 fail:
 	return rc;
+}
+
+RTE_EXPORT_EXPERIMENTAL_SYMBOL(rte_node_stream_edges_update, 26.03)
+int
+rte_node_stream_edges_update(rte_node_t id, const rte_edge_t *edges,
+			     uint8_t nb_edges)
+{
+	struct node *n;
+
+	if (nb_edges > RTE_NODE_STREAM_SLOTS_MAX) {
+		rte_errno = EINVAL;
+		return -EINVAL;
+	}
+
+	graph_spinlock_lock();
+
+	STAILQ_FOREACH(n, &node_list, next) {
+		if (n->id == id) {
+			n->nb_stream_edges = nb_edges;
+			memcpy(n->stream_edges, edges,
+			       nb_edges * sizeof(rte_edge_t));
+			graph_spinlock_unlock();
+			return 0;
+		}
+	}
+
+	graph_spinlock_unlock();
+	rte_errno = ENOENT;
+	return -ENOENT;
 }
 
 static rte_node_t

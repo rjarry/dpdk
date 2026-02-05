@@ -89,6 +89,17 @@ struct __rte_cache_aligned rte_graph {
 /**
  * @internal
  *
+ * Cached destination stream slot for rte_node_next_stream_enqueue().
+ */
+struct rte_node_stream_slot {
+	void **to_next;		/**< Dest stream ptr, NULL = lazy. */
+	rte_edge_t edge;	/**< Next edge index. */
+	uint16_t count;		/**< Objects enqueued in this slot. */
+};
+
+/**
+ * @internal
+ *
  * Data structure to hold node data.
  */
 struct __rte_cache_aligned rte_node {
@@ -119,6 +130,9 @@ struct __rte_cache_aligned rte_node {
 	/** Fast path area cache line 1. */
 	alignas(RTE_CACHE_LINE_MIN_SIZE)
 	rte_graph_off_t xstat_off; /**< Offset to xstat counters. */
+
+	struct rte_node_stream_slot stream_slots[RTE_NODE_STREAM_SLOTS_MAX];
+	uint8_t stream_slot_count;	/**< Number of active stream slots. */
 
 	/** Fast path area cache line 2. */
 	__extension__ struct __rte_cache_aligned {
@@ -184,6 +198,8 @@ void __rte_node_stream_alloc_size(struct rte_graph *graph,
 
 /* Fast path helper functions */
 
+static inline void __rte_node_next_stream_enqueue_flush(struct rte_graph *, struct rte_node *);
+
 /**
  * @internal
  *
@@ -204,6 +220,10 @@ __rte_node_process(struct rte_graph *graph, struct rte_node *node)
 	RTE_ASSERT(node->fence == RTE_GRAPH_FENCE);
 	objs = node->objs;
 	rte_prefetch0(objs);
+	for (uint8_t j = 0; j < node->stream_slot_count; j++) {
+		node->stream_slots[j].to_next = NULL;
+		node->stream_slots[j].count = 0;
+	}
 
 	if (rte_graph_has_stats_feature()) {
 		start = rte_rdtsc();
@@ -214,6 +234,10 @@ __rte_node_process(struct rte_graph *graph, struct rte_node *node)
 	} else {
 		node->process(graph, node, objs, node->idx);
 	}
+
+	if (node->stream_slot_count > 0)
+		__rte_node_next_stream_enqueue_flush(graph, node);
+
 	node->idx = 0;
 }
 
@@ -533,6 +557,243 @@ rte_node_next_stream_move(struct rte_graph *graph, struct rte_node *src,
 		__rte_node_enqueue_tail_update(graph, dst);
 	} else { /* Move the objects from src node to dst node */
 		rte_node_enqueue(graph, src, next, src->objs, src->idx);
+	}
+}
+
+/**
+ * @internal
+ * Materialize slot 0: allocate destination stream and bulk copy objects
+ * that were lazily accumulated in node->objs[].
+ */
+static inline void
+__rte_node_stream_slot_materialize(struct rte_graph *graph,
+				   struct rte_node *node)
+{
+	uint16_t n = node->stream_slots[0].count;
+
+	node->stream_slots[0].to_next = rte_node_next_stream_get(
+		graph, node, node->stream_slots[0].edge, node->idx);
+	rte_memcpy(node->stream_slots[0].to_next, node->objs,
+		   n * sizeof(void *));
+}
+
+/**
+ * @internal
+ * Find or allocate a stream slot for the given edge.
+ *
+ * When stream_edges are pre-declared, only those edges get slots.
+ * Otherwise, slots are assigned dynamically to the first edges seen.
+ * Slot 0 stays lazy (to_next == NULL) until a second slot is needed,
+ * enabling rte_node_next_stream_move() at flush time.
+ *
+ * Returns a pointer to the slot, or NULL if no slot is available.
+ */
+static inline struct rte_node_stream_slot *
+__rte_node_stream_slot_get(struct rte_graph *graph, struct rte_node *node,
+			   rte_edge_t next)
+{
+	uint8_t j;
+
+	/* Look up existing slots */
+	for (j = 0; j < node->stream_slot_count; j++) {
+		if (node->stream_slots[j].edge != next)
+			continue;
+
+		/* Slot 0: stay lazy until another slot is needed */
+		if (j == 0)
+			return &node->stream_slots[0];
+
+		/* First use of slot j>0: materialize slot 0 and allocate */
+		if (node->stream_slots[0].to_next == NULL)
+			__rte_node_stream_slot_materialize(graph, node);
+		if (node->stream_slots[j].to_next == NULL)
+			node->stream_slots[j].to_next = rte_node_next_stream_get(
+				graph, node, next, node->idx);
+
+		return &node->stream_slots[j];
+	}
+
+	/* No matching slot: dynamic allocation if room */
+	if (node->stream_slot_count >= RTE_NODE_STREAM_SLOTS_MAX)
+		return NULL;
+
+	if (node->stream_slot_count == 0) {
+		/* First edge ever: lazy slot 0 */
+		node->stream_slots[0].edge = next;
+		node->stream_slots[0].to_next = NULL;
+		node->stream_slots[0].count = 0;
+		node->stream_slot_count = 1;
+		return &node->stream_slots[0];
+	}
+
+	/* Materialize slot 0 if still lazy, then allocate new slot */
+	if (node->stream_slots[0].to_next == NULL)
+		__rte_node_stream_slot_materialize(graph, node);
+
+	j = node->stream_slot_count++;
+	node->stream_slots[j].edge = next;
+	node->stream_slots[j].to_next = rte_node_next_stream_get(
+		graph, node, next, node->idx);
+	node->stream_slots[j].count = 0;
+	return &node->stream_slots[j];
+}
+
+/**
+ * Enqueue a batch of objects to a single next edge.
+ *
+ * Uses a small cache of destination streams (up to RTE_NODE_STREAM_SLOTS_MAX
+ * edges). Objects are written directly into the destination node's stream,
+ * keeping it cache-hot.
+ *
+ * The first edge used (slot 0) is handled lazily: objects stay in
+ * node->objs[] without any copy. If all objects go to the same edge,
+ * rte_node_next_stream_move() is used at flush time (zero copy pointer
+ * swap). When a second edge is encountered, slot 0 is materialized (bulk
+ * copied to the destination stream) and subsequent writes go directly into
+ * destination streams.
+ *
+ * Preferred edges can be declared in the node registration
+ * (stream_edges[]) or updated at runtime with
+ * rte_node_stream_edges_update(). When no edges are declared, slots are
+ * assigned dynamically as new edges appear.
+ *
+ * @param graph
+ *   Graph pointer returned from rte_graph_lookup().
+ * @param node
+ *   Current node pointer.
+ * @param next
+ *   Next node edge index to enqueue to.
+ * @param objs
+ *   Array of object pointers to enqueue.
+ * @param nb_objs
+ *   Number of objects.
+ *
+ * @see rte_node_next_stream_move().
+ * @see rte_node_stream_edges_update().
+ */
+static inline void
+rte_node_next_stream_enqueue(struct rte_graph *graph, struct rte_node *node,
+			     rte_edge_t next, void **objs, uint16_t nb_objs)
+{
+	struct rte_node_stream_slot *slot;
+
+	slot = __rte_node_stream_slot_get(graph, node, next);
+	if (likely(slot != NULL)) {
+		if (slot->to_next != NULL)
+			rte_memcpy(&slot->to_next[slot->count],
+				   objs, nb_objs * sizeof(void *));
+		slot->count += nb_objs;
+	} else {
+		rte_node_enqueue(graph, node, next, objs, nb_objs);
+	}
+}
+
+/**
+ * Enqueue one object to a next edge.
+ *
+ * @see rte_node_next_stream_enqueue().
+ */
+static inline void
+rte_node_next_stream_enqueue_x1(struct rte_graph *graph, struct rte_node *node,
+				rte_edge_t next, void *obj)
+{
+	struct rte_node_stream_slot *slot;
+
+	slot = __rte_node_stream_slot_get(graph, node, next);
+	if (likely(slot != NULL)) {
+		if (slot->to_next != NULL)
+			slot->to_next[slot->count] = obj;
+		slot->count++;
+	} else {
+		rte_node_enqueue_x1(graph, node, next, obj);
+	}
+}
+
+/**
+ * Enqueue 2 objects to next edges (possibly different).
+ *
+ * @see rte_node_next_stream_enqueue().
+ */
+static inline void
+rte_node_next_stream_enqueue_x2(struct rte_graph *graph, struct rte_node *node,
+				rte_edge_t next0, void *obj0,
+				rte_edge_t next1, void *obj1)
+{
+	if (likely(next0 == next1)) {
+		void *objs[2] = { obj0, obj1 };
+
+		rte_node_next_stream_enqueue(graph, node, next0, objs, 2);
+	} else {
+		rte_node_next_stream_enqueue_x1(graph, node, next0, obj0);
+		rte_node_next_stream_enqueue_x1(graph, node, next1, obj1);
+	}
+}
+
+/**
+ * Enqueue 4 objects to next edges (possibly different).
+ *
+ * When all 4 edges are identical (common case), a single slot lookup is
+ * done. Otherwise falls back to per-object enqueue.
+ *
+ * @see rte_node_next_stream_enqueue().
+ */
+static inline void
+rte_node_next_stream_enqueue_x4(struct rte_graph *graph, struct rte_node *node,
+				rte_edge_t next0, void *obj0,
+				rte_edge_t next1, void *obj1,
+				rte_edge_t next2, void *obj2,
+				rte_edge_t next3, void *obj3)
+{
+	if (likely(!((next0 ^ next1) | (next1 ^ next2) | (next2 ^ next3)))) {
+		void *objs[4] = { obj0, obj1, obj2, obj3 };
+
+		rte_node_next_stream_enqueue(graph, node, next0, objs, 4);
+	} else {
+		rte_node_next_stream_enqueue_x1(graph, node, next0, obj0);
+		rte_node_next_stream_enqueue_x1(graph, node, next1, obj1);
+		rte_node_next_stream_enqueue_x1(graph, node, next2, obj2);
+		rte_node_next_stream_enqueue_x1(graph, node, next3, obj3);
+	}
+}
+
+/**
+ * @internal
+ * Flush stream enqueue slots at end of node processing.
+ */
+static inline void
+__rte_node_next_stream_enqueue_flush(struct rte_graph *graph, struct rte_node *node)
+{
+	uint8_t j;
+
+	/*
+	 * If slot 0 is still lazy, no other slot can have data (because
+	 * materializing slot 0 is a prerequisite to using any other slot).
+	 */
+	if (node->stream_slots[0].to_next == NULL) {
+		if (node->stream_slots[0].count == 0)
+			return;
+		/*
+		 * stream_move transfers node->idx objects. Only safe when
+		 * all objects were enqueued to slot 0.
+		 */
+		if (node->stream_slots[0].count == node->idx) {
+			rte_node_next_stream_move(graph, node,
+						  node->stream_slots[0].edge);
+			return;
+		}
+		/* Partial enqueue: materialize and use stream_put */
+		__rte_node_stream_slot_materialize(graph, node);
+		rte_node_next_stream_put(graph, node,
+					 node->stream_slots[0].edge,
+					 node->stream_slots[0].count);
+		return;
+	}
+
+	for (j = 0; j < node->stream_slot_count; j++) {
+		if (node->stream_slots[j].count > 0)
+			rte_node_next_stream_put(graph, node,
+						 node->stream_slots[j].edge,
+						 node->stream_slots[j].count);
 	}
 }
 

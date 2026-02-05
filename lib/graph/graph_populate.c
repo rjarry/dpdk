@@ -107,6 +107,10 @@ graph_nodes_populate(struct graph *_graph)
 		node->dispatch.lcore_id = graph_node->node->lcore_id;
 		nb_edges = graph_node->node->nb_edges;
 		node->nb_edges = nb_edges;
+		node->stream_slot_count = graph_node->node->nb_stream_edges;
+		for (count = 0; count < node->stream_slot_count; count++)
+			node->stream_slots[count].edge =
+				graph_node->node->stream_edges[count];
 		off += sizeof(struct rte_node);
 		/* Copy the name in first pass to replace with rte_node* later*/
 		for (count = 0; count < nb_edges; count++)

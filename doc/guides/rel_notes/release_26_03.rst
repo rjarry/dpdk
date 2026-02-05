@@ -111,6 +111,15 @@ New Features
   * Added support for secondary processes.
   * Added support for GENEVE TSO and tunnel outer UDP Rx checksum.
 
+* **Added stream enqueue API for graph nodes.**
+
+  Added ``rte_node_next_stream_enqueue()`` and its ``_x1``, ``_x2``, ``_x4``
+  variants as cache-efficient alternatives to per-object enqueue functions.
+  They maintain a small cache of destination streams (up to 4 edges) and write
+  objects directly into them, with automatic flush at end of node processing.
+  Preferred edges can be declared in the node registration or updated at
+  runtime with ``rte_node_stream_edges_update()``.
+
 * **Added 256-NEA/NCA/NIA algorithms in cryptodev library.**
 
   Added support for following wireless algorithms:
