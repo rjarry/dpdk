@@ -84,6 +84,7 @@ graph_nodes_populate(struct graph *_graph)
 		struct rte_node *node = RTE_PTR_ADD(graph, off);
 		memset(node, 0, sizeof(*node));
 		node->fence = RTE_GRAPH_FENCE;
+		node->deferred_last_edge = RTE_EDGE_ID_INVALID;
 		node->off = off;
 		if (graph_pcap_is_enable()) {
 			node->process = graph_pcap_dispatch;
