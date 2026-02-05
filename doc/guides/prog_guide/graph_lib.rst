@@ -953,8 +953,7 @@ On successful LPM lookup, the result contains the ``next_node`` id and
 
 On LPM lookup failure, objects are redirected to pkt_drop node.
 ``rte_node_ip4_route_add()`` is control path API to add ipv4 routes.
-To achieve home run, node use ``rte_node_stream_move()`` as mentioned in above
-sections.
+Enqueue to next nodes is done using ``rte_node_next_stream_enqueue()``.
 
 ip4_lookup_fib
 ~~~~~~~~~~~~~~
@@ -968,7 +967,7 @@ with which the packet needs to be further processed.
 
 On FIB lookup failure, objects are redirected to pkt_drop node.
 ``rte_node_ip4_fib_route_add()`` is control path API to add IPv4 routes.
-To achieve home run, node use ``rte_node_stream_move()`` as mentioned in above sections.
+Enqueue to next nodes is done using ``rte_node_next_stream_enqueue()``.
 
 This node is used only when lookup mode is given as FIB in the application.
 Otherwise, the ``ip4_lookup`` node is used by default which does LPM lookup.
@@ -999,8 +998,7 @@ and `next-hop`` ID with which the packet needs to be further processed.
 
 On LPM lookup failure, objects are redirected to ``pkt_drop`` node.
 ``rte_node_ip6_route_add()`` is control path API to add IPv6 routes.
-To achieve home run, node use ``rte_node_stream_move()``
-as mentioned in above sections.
+Enqueue to next nodes is done using ``rte_node_next_stream_enqueue()``.
 
 ip6_lookup_fib
 ~~~~~~~~~~~~~~
@@ -1013,7 +1011,7 @@ with which the packet needs to be further processed.
 
 On FIB lookup failure, objects are redirected to ``pkt_drop`` node.
 ``rte_node_ip6_fib_route_add()`` is control path API to add IPv6 routes.
-To achieve home run, node use ``rte_node_stream_move()`` as mentioned in above sections.
+Enqueue to next nodes is done using ``rte_node_next_stream_enqueue()``.
 
 This node is used only when lookup mode is given as FIB in the application.
 Otherwise, the ``ip6_lookup`` node is used by default which does LPM lookup.
@@ -1063,8 +1061,7 @@ needs to be further processed.
 On packet_type lookup failure, objects are redirected to ``pkt_drop`` node.
 ``rte_node_ip4_route_add()`` is control path API to add ipv4 address with 32 bit
 depth to receive to packets.
-To achieve home run, node use ``rte_node_stream_move()`` as mentioned in above
-sections.
+Enqueue to next nodes is done using ``rte_node_next_stream_enqueue()``.
 
 udp4_input
 ~~~~~~~~~~

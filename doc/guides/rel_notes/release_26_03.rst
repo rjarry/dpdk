@@ -120,6 +120,8 @@ New Features
   Preferred edges can be declared in the node registration or updated at
   runtime with ``rte_node_stream_edges_update()``.
 
+  All built-in node process functions have been converted to use this API.
+
 * **Added 256-NEA/NCA/NIA algorithms in cryptodev library.**
 
   Added support for following wireless algorithms:
