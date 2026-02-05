@@ -53,25 +53,16 @@ ip4_lookup_node_process_scalar(struct rte_graph *graph, struct rte_node *node,
 	struct rte_lpm *lpm = IP4_LOOKUP_NODE_LPM(node->ctx);
 	const int dyn = IP4_LOOKUP_NODE_PRIV1_OFF(node->ctx);
 	struct rte_ipv4_hdr *ipv4_hdr;
-	void **to_next, **from;
-	uint16_t last_spec = 0;
 	struct rte_mbuf *mbuf;
-	rte_edge_t next_index;
-	uint16_t held = 0;
 	uint32_t drop_nh;
 	int i, rc;
 
-	/* Speculative next */
-	next_index = RTE_NODE_IP4_LOOKUP_NEXT_REWRITE;
 	/* Drop node */
 	drop_nh = ((uint32_t)RTE_NODE_IP4_LOOKUP_NEXT_PKT_DROP) << 16;
-	from = objs;
 
-	/* Get stream for the speculated next node */
-	to_next = rte_node_next_stream_get(graph, node, next_index, nb_objs);
 	for (i = 0; i < nb_objs; i++) {
 		uint32_t next_hop;
-		uint16_t next;
+		rte_edge_t next;
 
 		mbuf = (struct rte_mbuf *)objs[i];
 
@@ -88,32 +79,10 @@ ip4_lookup_node_process_scalar(struct rte_graph *graph, struct rte_node *node,
 		NODE_INCREMENT_XSTAT_ID(node, 0, rc != 0, 1);
 
 		node_mbuf_priv1(mbuf, dyn)->nh = (uint16_t)next_hop;
-		next_hop = next_hop >> 16;
-		next = (uint16_t)next_hop;
+		next = (uint16_t)(next_hop >> 16);
 
-		if (unlikely(next_index != next)) {
-			/* Copy things successfully speculated till now */
-			rte_memcpy(to_next, from, last_spec * sizeof(from[0]));
-			from += last_spec;
-			to_next += last_spec;
-			held += last_spec;
-			last_spec = 0;
-
-			rte_node_enqueue_x1(graph, node, next, from[0]);
-			from += 1;
-		} else {
-			last_spec += 1;
-		}
+		rte_node_enqueue_deferred(graph, node, next, i);
 	}
-
-	/* !!! Home run !!! */
-	if (likely(last_spec == nb_objs)) {
-		rte_node_next_stream_move(graph, node, next_index);
-		return nb_objs;
-	}
-	held += last_spec;
-	rte_memcpy(to_next, from, last_spec * sizeof(from[0]));
-	rte_node_next_stream_put(graph, node, next_index, held);
 
 	return nb_objs;
 }

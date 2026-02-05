@@ -51,50 +51,19 @@ __app_graph_ip4_output_hook_node_process(struct rte_graph *graph, struct rte_nod
 	struct rte_graph_feature_arc *arc =
 		rte_graph_feature_arc_get(OUTPUT_HOOK_FEATURE_ARC(node->ctx));
 	struct rte_graph_feature_arc_mbuf_dynfields *mbfields = NULL;
-	uint16_t next = OUTPUT_HOOK_PKT_DROP;
-	void **to_next, **from;
-	uint16_t last_spec = 0;
-	rte_edge_t next_index;
 	struct rte_mbuf *mbuf;
-	uint16_t held = 0;
+	rte_edge_t next;
 	int i;
 
-	/* Speculative next */
-	next_index = OUTPUT_HOOK_LAST_NEXT_INDEX(node->ctx);
-
-	from = objs;
-	to_next = rte_node_next_stream_get(graph, node, next_index, nb_objs);
 	for (i = 0; i < nb_objs; i++) {
-
 		mbuf = (struct rte_mbuf *)objs[i];
 
 		/* Send mbuf to next enabled feature */
 		mbfields = rte_graph_feature_arc_mbuf_dynfields_get(mbuf, arc->mbuf_dyn_offset);
 		rte_graph_feature_data_next_feature_get(arc, &mbfields->feature_data, &next);
 
-		if (unlikely(next_index != next)) {
-			/* Copy things successfully speculated till now */
-			rte_memcpy(to_next, from, last_spec * sizeof(from[0]));
-			from += last_spec;
-			to_next += last_spec;
-			held += last_spec;
-			last_spec = 0;
-
-			rte_node_enqueue_x1(graph, node, next, from[0]);
-			from += 1;
-		} else {
-			last_spec += 1;
-		}
+		rte_node_enqueue_deferred(graph, node, next, i);
 	}
-	/* !!! Home run !!! */
-	if (likely(last_spec == nb_objs)) {
-		rte_node_next_stream_move(graph, node, next_index);
-		return nb_objs;
-	}
-	held += last_spec;
-	rte_memcpy(to_next, from, last_spec * sizeof(from[0]));
-	rte_node_next_stream_put(graph, node, next_index, held);
-	OUTPUT_HOOK_LAST_NEXT_INDEX(node->ctx) = next;
 
 	return nb_objs;
 }

@@ -19,14 +19,9 @@
 struct ip6_rewrite_node_ctx {
 	/* Dynamic offset to mbuf priv1 */
 	int mbuf_priv1_off;
-	/* Cached next index */
-	uint16_t next_index;
 };
 
 static struct ip6_rewrite_node_main *ip6_rewrite_nm;
-
-#define IP6_REWRITE_NODE_LAST_NEXT(ctx) \
-	(((struct ip6_rewrite_node_ctx *)ctx)->next_index)
 
 #define IP6_REWRITE_NODE_PRIV1_OFF(ctx) \
 	(((struct ip6_rewrite_node_ctx *)ctx)->mbuf_priv1_off)
@@ -38,28 +33,23 @@ ip6_rewrite_node_process(struct rte_graph *graph, struct rte_node *node,
 	struct rte_mbuf *mbuf0, *mbuf1, *mbuf2, *mbuf3, **pkts;
 	struct ip6_rewrite_nh_header *nh = ip6_rewrite_nm->nh;
 	const int dyn = IP6_REWRITE_NODE_PRIV1_OFF(node->ctx);
-	uint16_t next0, next1, next2, next3, next_index;
-	uint16_t n_left_from, held = 0, last_spec = 0;
 	struct rte_ipv6_hdr *ip0, *ip1, *ip2, *ip3;
+	rte_edge_t next0, next1, next2, next3;
 	void *d0, *d1, *d2, *d3;
-	void **to_next, **from;
+	uint16_t n_left_from;
 	rte_xmm_t priv01;
 	rte_xmm_t priv23;
 	int i;
 
-	/* Speculative next as last next */
-	next_index = IP6_REWRITE_NODE_LAST_NEXT(node->ctx);
 	rte_prefetch0(nh);
 
 	pkts = (struct rte_mbuf **)objs;
-	from = objs;
 	n_left_from = nb_objs;
 
 	for (i = 0; i < 4 && i < n_left_from; i++)
 		rte_prefetch0(pkts[i]);
 
-	/* Get stream for the speculated next node */
-	to_next = rte_node_next_stream_get(graph, node, next_index, nb_objs);
+	i = 0;
 	/* Update Ethernet header of pkts */
 	while (n_left_from >= 4) {
 		if (likely(n_left_from > 7)) {
@@ -123,76 +113,11 @@ ip6_rewrite_node_process(struct rte_graph *graph, struct rte_node *node,
 					      sizeof(struct rte_ether_hdr));
 		ip3->hop_limits = priv23.u16[5] - 1;
 
-		/* Enqueue four packets to next node */
-		rte_edge_t fix_spec =
-			((next_index == next0) && (next0 == next1) &&
-			 (next1 == next2) && (next2 == next3));
-
-		if (unlikely(fix_spec == 0)) {
-			/* Copy things successfully speculated till now */
-			rte_memcpy(to_next, from, last_spec * sizeof(from[0]));
-			from += last_spec;
-			to_next += last_spec;
-			held += last_spec;
-			last_spec = 0;
-
-			/* next0 */
-			if (next_index == next0) {
-				to_next[0] = from[0];
-				to_next++;
-				held++;
-			} else {
-				rte_node_enqueue_x1(graph, node, next0,
-						    from[0]);
-			}
-
-			/* next1 */
-			if (next_index == next1) {
-				to_next[0] = from[1];
-				to_next++;
-				held++;
-			} else {
-				rte_node_enqueue_x1(graph, node, next1,
-						    from[1]);
-			}
-
-			/* next2 */
-			if (next_index == next2) {
-				to_next[0] = from[2];
-				to_next++;
-				held++;
-			} else {
-				rte_node_enqueue_x1(graph, node, next2,
-						    from[2]);
-			}
-
-			/* next3 */
-			if (next_index == next3) {
-				to_next[0] = from[3];
-				to_next++;
-				held++;
-			} else {
-				rte_node_enqueue_x1(graph, node, next3,
-						    from[3]);
-			}
-
-			from += 4;
-
-			/* Change speculation if last two are same */
-			if ((next_index != next3) && (next2 == next3)) {
-				/* Put the current speculated node */
-				rte_node_next_stream_put(graph, node,
-							 next_index, held);
-				held = 0;
-
-				/* Get next speculated stream */
-				next_index = next3;
-				to_next = rte_node_next_stream_get(
-					graph, node, next_index, nb_objs);
-			}
-		} else {
-			last_spec += 4;
-		}
+		rte_node_enqueue_deferred(graph, node, next0, i);
+		rte_node_enqueue_deferred(graph, node, next1, i + 1);
+		rte_node_enqueue_deferred(graph, node, next2, i + 2);
+		rte_node_enqueue_deferred(graph, node, next3, i + 3);
+		i += 4;
 	}
 
 	while (n_left_from > 0) {
@@ -210,32 +135,9 @@ ip6_rewrite_node_process(struct rte_graph *graph, struct rte_node *node,
 					      sizeof(struct rte_ether_hdr));
 		ip0->hop_limits = node_mbuf_priv1(mbuf0, dyn)->ttl - 1;
 
-		if (unlikely(next_index ^ next0)) {
-			/* Copy things successfully speculated till now */
-			rte_memcpy(to_next, from, last_spec * sizeof(from[0]));
-			from += last_spec;
-			to_next += last_spec;
-			held += last_spec;
-			last_spec = 0;
-
-			rte_node_enqueue_x1(graph, node, next0, from[0]);
-			from += 1;
-		} else {
-			last_spec += 1;
-		}
+		rte_node_enqueue_deferred(graph, node, next0, i);
+		i += 1;
 	}
-
-	/* !!! Home run !!! */
-	if (likely(last_spec == nb_objs)) {
-		rte_node_next_stream_move(graph, node, next_index);
-		return nb_objs;
-	}
-
-	held += last_spec;
-	rte_memcpy(to_next, from, last_spec * sizeof(from[0]));
-	rte_node_next_stream_put(graph, node, next_index, held);
-	/* Save the last next used */
-	IP6_REWRITE_NODE_LAST_NEXT(node->ctx) = next_index;
 
 	return nb_objs;
 }

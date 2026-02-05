@@ -14,17 +14,11 @@
 #include "node_private.h"
 #include "interface_tx_feature_priv.h"
 
-#define IF_TX_FEATURE_LAST_NEXT_INDEX(ctx) \
-	(((struct if_tx_feature_node_ctx *)ctx)->last_index)
 /*
  * @internal array for mapping port to next node index
  */
 struct if_tx_feature_node_main  {
 	uint16_t next_index[RTE_MAX_ETHPORTS];
-};
-
-struct if_tx_feature_node_ctx {
-	uint16_t last_index;
 };
 
 static struct if_tx_feature_node_main *if_tx_feature_nm;
@@ -48,9 +42,7 @@ static int
 if_tx_feature_node_init(const struct rte_graph *graph, struct rte_node *node)
 {
 	RTE_SET_USED(graph);
-
-	/* pkt_drop */
-	IF_TX_FEATURE_LAST_NEXT_INDEX(node->ctx) = 0;
+	RTE_SET_USED(node);
 
 	return 0;
 }
@@ -59,21 +51,15 @@ static uint16_t
 if_tx_feature_node_process(struct rte_graph *graph, struct rte_node *node,
 			   void **objs, uint16_t nb_objs)
 {
-	uint16_t held = 0, next0 = 0, next1 = 0, next2 = 0, next3 = 0;
 	struct rte_mbuf *mbuf0, *mbuf1, *mbuf2, *mbuf3, **pkts;
-	uint16_t last_spec = 0, fix_spec = 0;
-	void **to_next, **from;
-	rte_edge_t next_index;
+	rte_edge_t next0, next1, next2, next3;
 	uint16_t n_left_from;
+	int i;
 
-	/* Speculative next */
-	next_index = IF_TX_FEATURE_LAST_NEXT_INDEX(node->ctx);
-
-	from = objs;
 	n_left_from = nb_objs;
 	pkts = (struct rte_mbuf **)objs;
 
-	to_next = rte_node_next_stream_get(graph, node, next_index, nb_objs);
+	i = 0;
 	while (n_left_from > 4) {
 		if (likely(n_left_from > 7)) {
 			/* Prefetch next mbuf */
@@ -95,57 +81,11 @@ if_tx_feature_node_process(struct rte_graph *graph, struct rte_node *node,
 		next2 = if_tx_feature_nm->next_index[mbuf2->port];
 		next3 = if_tx_feature_nm->next_index[mbuf3->port];
 
-		fix_spec = (next_index ^ next0) | (next_index ^ next1) |
-			(next_index ^ next2) | (next_index ^ next3);
-
-		if (unlikely(fix_spec)) {
-			/* Copy things successfully speculated till now */
-			rte_memcpy(to_next, from,
-				   last_spec * sizeof(from[0]));
-			from += last_spec;
-			to_next += last_spec;
-			held += last_spec;
-			last_spec = 0;
-
-			if (next0 == next_index) {
-				to_next[0] = from[0];
-				to_next++;
-				held++;
-			} else {
-				rte_node_enqueue_x1(graph, node,
-						    next0, from[0]);
-			}
-
-			if (next1 == next_index) {
-				to_next[0] = from[1];
-				to_next++;
-				held++;
-			} else {
-				rte_node_enqueue_x1(graph, node,
-						    next1, from[1]);
-			}
-
-			if (next2 == next_index) {
-				to_next[0] = from[2];
-				to_next++;
-				held++;
-			} else {
-				rte_node_enqueue_x1(graph, node,
-						    next2, from[2]);
-			}
-
-			if (next3 == next_index) {
-				to_next[0] = from[3];
-				to_next++;
-				held++;
-			} else {
-				rte_node_enqueue_x1(graph, node,
-						    next3, from[3]);
-			}
-			from += 4;
-		} else {
-			last_spec += 4;
-		}
+		rte_node_enqueue_deferred(graph, node, next0, i);
+		rte_node_enqueue_deferred(graph, node, next1, i + 1);
+		rte_node_enqueue_deferred(graph, node, next2, i + 2);
+		rte_node_enqueue_deferred(graph, node, next3, i + 3);
+		i += 4;
 	}
 
 	while (n_left_from > 0) {
@@ -155,33 +95,10 @@ if_tx_feature_node_process(struct rte_graph *graph, struct rte_node *node,
 		n_left_from -= 1;
 
 		next0 = if_tx_feature_nm->next_index[mbuf0->port];
-		if (unlikely(next0 != next_index)) {
-			/* Copy things successfully speculated till now */
-			rte_memcpy(to_next, from,
-				   last_spec * sizeof(from[0]));
-			from += last_spec;
-			to_next += last_spec;
-			held += last_spec;
-			last_spec = 0;
 
-			rte_node_enqueue_x1(graph, node,
-					    next0, from[0]);
-			from += 1;
-		} else {
-			last_spec += 1;
-		}
+		rte_node_enqueue_deferred(graph, node, next0, i);
+		i += 1;
 	}
-
-	/* !!! Home run !!! */
-	if (likely(last_spec == nb_objs)) {
-		rte_node_next_stream_move(graph, node, next_index);
-		return nb_objs;
-	}
-	held += last_spec;
-	rte_memcpy(to_next, from, last_spec * sizeof(from[0]));
-	rte_node_next_stream_put(graph, node, next_index, held);
-
-	IF_TX_FEATURE_LAST_NEXT_INDEX(node->ctx) = next0;
 
 	return nb_objs;
 }

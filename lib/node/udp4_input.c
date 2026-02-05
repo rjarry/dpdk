@@ -26,10 +26,6 @@
 #define UDP4_INPUT_NODE_HASH(ctx) \
 	(((struct udp4_input_node_ctx *)ctx)->hash)
 
-#define UDP4_INPUT_NODE_NEXT_INDEX(ctx) \
-	(((struct udp4_input_node_ctx *)ctx)->next_index)
-
-
 /* UDP4 input  global data struct */
 struct udp4_input_node_main {
 	struct rte_hash *hash_tbl[RTE_MAX_NUMA_NODES];
@@ -40,8 +36,6 @@ static struct udp4_input_node_main udp4_input_nm;
 struct udp4_input_node_ctx {
 	/* Socket's Hash table */
 	struct rte_hash *hash;
-	/* Cached next index */
-	uint16_t next_index;
 };
 
 struct flow_key {
@@ -155,21 +149,11 @@ udp4_input_node_process_scalar(struct rte_graph *graph, struct rte_node *node,
 			       void **objs, uint16_t nb_objs)
 {
 	struct rte_hash *hash_tbl_handle = UDP4_INPUT_NODE_HASH(node->ctx);
-	rte_edge_t next_index, udplookup_node;
 	struct rte_udp_hdr *pkt_udp_hdr;
-	uint16_t last_spec = 0;
-	void **to_next, **from;
+	rte_edge_t udplookup_node, next;
 	struct rte_mbuf *mbuf;
-	uint16_t held = 0;
-	uint16_t next = 0;
 	int i, rc;
 
-	/* Speculative next */
-	next_index = UDP4_INPUT_NODE_NEXT_INDEX(node->ctx);
-
-	from = objs;
-
-	to_next = rte_node_next_stream_get(graph, node, next_index, nb_objs);
 	for (i = 0; i < nb_objs; i++) {
 		struct flow_key key_port;
 
@@ -185,30 +169,8 @@ udp4_input_node_process_scalar(struct rte_graph *graph, struct rte_node *node,
 		next = (rc < 0) ? RTE_NODE_UDP4_INPUT_NEXT_PKT_DROP
 				    : udplookup_node;
 
-		if (unlikely(next_index != next)) {
-			/* Copy things successfully speculated till now */
-			rte_memcpy(to_next, from, last_spec * sizeof(from[0]));
-			from += last_spec;
-			to_next += last_spec;
-			held += last_spec;
-			last_spec = 0;
-
-			rte_node_enqueue_x1(graph, node, next, from[0]);
-			from += 1;
-		} else {
-			last_spec += 1;
-		}
+		rte_node_enqueue_deferred(graph, node, next, i);
 	}
-	/* !!! Home run !!! */
-	if (likely(last_spec == nb_objs)) {
-		rte_node_next_stream_move(graph, node, next_index);
-		return nb_objs;
-	}
-	held += last_spec;
-	rte_memcpy(to_next, from, last_spec * sizeof(from[0]));
-	rte_node_next_stream_put(graph, node, next_index, held);
-	/* Save the last next used */
-	UDP4_INPUT_NODE_NEXT_INDEX(node->ctx) = next;
 
 	return nb_objs;
 }
