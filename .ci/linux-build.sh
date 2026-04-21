@@ -163,6 +163,7 @@ fi
 
 OPTS="$OPTS -Dbuildtype=$buildtype"
 OPTS="$OPTS -Dwerror=true"
+OPTS="$OPTS --fatal-meson-warnings"
 
 if [ -d build ]; then
     meson configure build $OPTS
