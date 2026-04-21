@@ -244,6 +244,9 @@ int mlx5_tx_burst_mode_get(struct rte_eth_dev *dev, uint16_t tx_queue_id,
 /* mlx5_tx_empw.c */
 
 MLX5_TXOFF_PRE_DECL(full_empw);
+#ifdef MLX5_MINIMAL_TX
+MLX5_TXOFF_PRE_DECL(full_noi_empw);
+#else
 MLX5_TXOFF_PRE_DECL(none_empw);
 MLX5_TXOFF_PRE_DECL(md_empw);
 MLX5_TXOFF_PRE_DECL(mt_empw);
@@ -258,10 +261,14 @@ MLX5_TXOFF_PRE_DECL(sciv_empw);
 MLX5_TXOFF_PRE_DECL(i_empw);
 MLX5_TXOFF_PRE_DECL(v_empw);
 MLX5_TXOFF_PRE_DECL(iv_empw);
+#endif
 
 /* mlx5_tx_nompw.c */
 
 MLX5_TXOFF_PRE_DECL(full);
+#ifdef MLX5_MINIMAL_TX
+MLX5_TXOFF_PRE_DECL(full_noi);
+#else
 MLX5_TXOFF_PRE_DECL(none);
 MLX5_TXOFF_PRE_DECL(md);
 MLX5_TXOFF_PRE_DECL(mt);
@@ -276,6 +283,7 @@ MLX5_TXOFF_PRE_DECL(sciv);
 MLX5_TXOFF_PRE_DECL(i);
 MLX5_TXOFF_PRE_DECL(v);
 MLX5_TXOFF_PRE_DECL(iv);
+#endif
 
 /* mlx5_tx_txpp.c */
 
@@ -283,17 +291,21 @@ MLX5_TXOFF_PRE_DECL(full_ts_nompw);
 MLX5_TXOFF_PRE_DECL(full_ts_nompwi);
 MLX5_TXOFF_PRE_DECL(full_ts);
 MLX5_TXOFF_PRE_DECL(full_ts_noi);
+#ifndef MLX5_MINIMAL_TX
 MLX5_TXOFF_PRE_DECL(none_ts);
 MLX5_TXOFF_PRE_DECL(mdi_ts);
 MLX5_TXOFF_PRE_DECL(mti_ts);
 MLX5_TXOFF_PRE_DECL(mtiv_ts);
+#endif
 
 /* mlx5_tx_mpw.c */
 
 MLX5_TXOFF_PRE_DECL(none_mpw);
 MLX5_TXOFF_PRE_DECL(mci_mpw);
 MLX5_TXOFF_PRE_DECL(mc_mpw);
+#ifndef MLX5_MINIMAL_TX
 MLX5_TXOFF_PRE_DECL(i_mpw);
+#endif
 
 static __rte_always_inline struct mlx5_uar_data *
 mlx5_tx_bfreg(struct mlx5_txq_data *txq)
