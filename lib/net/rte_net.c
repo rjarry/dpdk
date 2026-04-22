@@ -357,12 +357,14 @@ uint32_t rte_net_get_ptype(const struct rte_mbuf *m,
 		const struct rte_vlan_hdr *vh;
 		struct rte_vlan_hdr vh_copy;
 
+		if (vlan_depth == 0) {
+			pkt_type =
+				proto == rte_cpu_to_be_16(RTE_ETHER_TYPE_VLAN) ?
+					 RTE_PTYPE_L2_ETHER_VLAN :
+					 RTE_PTYPE_L2_ETHER_QINQ;
+		}
 		if (++vlan_depth > RTE_NET_VLAN_MAX_DEPTH)
 			return 0;
-		pkt_type |=
-			proto == rte_cpu_to_be_16(RTE_ETHER_TYPE_VLAN) ?
-				 RTE_PTYPE_L2_ETHER_VLAN :
-				 RTE_PTYPE_L2_ETHER_QINQ;
 		vh = rte_pktmbuf_read(m, off, sizeof(*vh), &vh_copy);
 		if (unlikely(vh == NULL))
 			return pkt_type;
